@@ -6,18 +6,25 @@ import 'firebase/database';
 
 import axios from 'axios';
 
-// ============================================
-// components
-// ============================================
-import GlobalStyle from './globalStyles';
-import Container from './atoms/Container/index';
-import Header from './atoms/Header/index';
-import Content from './atoms/Content/index';
-import Heading from './atoms/Heading/index';
-import Button from './atoms/Button/index';
-import TextInput from './atoms/TextInput/index';
+// import GlobalStyle from './globalStyles';
+// import Container from './atoms/Container/index';
+// import Header from './atoms/Header/index';
+// import Content from './atoms/Content/index';
+// import Heading from './atoms/Heading/index';
+// import Button from './atoms/Button/index';
+// import TextInput from './atoms/TextInput/index';
+// import StatsList from './molecules/StatsList/index';
 
-import StatsList from './molecules/StatsList/index';
+import {
+  CssBaseline,
+  AppBar,
+  Container,
+  Typography,
+  FormControl,
+  TextField,
+  Button
+} from '@material-ui/core';
+
 
 // ============================================
 // firebase
@@ -44,7 +51,6 @@ const HOSTNAME = 'https://api.pubg.com/';
 
 
 
-
 // ============================================
 // ============================================
 // ============================================
@@ -54,8 +60,8 @@ interface State {
   userID: string;
 }
 
-export default class Root extends React.Component {
 
+export default class Root extends React.Component {
   public state: State = {
     value: "",
     userID: ""
@@ -108,7 +114,7 @@ export default class Root extends React.Component {
     this.setState({userID: event.target.value});
   }
 
-  public getMatches = async (event?: React.MouseEvent<HTMLInputElement>) => {
+  public getMatches = async (event?: any) => {
     if(event){
       let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + this.state.userID);
       console.log("きてる 2 " + JSON.stringify(playerDataGetResult));
@@ -117,20 +123,31 @@ export default class Root extends React.Component {
 
   render() {
     return (
-      <Container>
-        <GlobalStyle />
-        <Header><Heading>Hello world</Heading></Header>
-        <Content>
-          <StatsList  />
-          <TextInput type="text" id="pubgID" size="sm" className="mg-r-10" value={this.state.userID}  onChange={this.changeUserID} />
-          <Button type="button" className="mg-b-30" color="secondary" size="sm" onClick={this.getMatches}>Get PUBG API!!</Button>
+      <div>
+        <CssBaseline />
+        <AppBar position="sticky" style={{ padding: '10px 30px', marginBottom: '30px' }}>
+          <Typography variant="h6" component="h1" noWrap>
+            Hello world
+          </Typography>
+        </AppBar>
+        <Container>
+          <FormControl>
+            <TextField
+              id="pubgID"
+              label="PUBG ID"
+              value={this.state.userID}
+              onChange={this.changeUserID}
 
-          <form onSubmit={this.valueUpdate}>
-            <TextInput type="text" id="valueInput" size="sm" className="mg-r-10" value={this.state.value} onChange={this.changeValue} />
-            <Button type="submit" id="updateButton" color="primary" size="sm">Update Firebase DB</Button>
-          </form>
-        </Content>
-      </Container>
+              placeholder="Placeholder"
+              helperText="PleaseInput your PUBG ID"
+              fullWidth
+              margin="dense"
+              variant="outlined"
+            />
+          </FormControl>
+          <Button variant="contained" color="primary"　size="large" style={{ marginLeft: '16px', marginTop: '6px' }} onClick={this.getMatches}>Get PUBG API!!</Button>
+        </Container>
+      </div>
     );
   }
 }
