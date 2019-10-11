@@ -95,17 +95,6 @@ export default class Root extends React.Component {
 
   // 初期化的な
   componentWillMount() {
-    // firebaseDB から ID取得
-    // firebaseDB.ref('/').once('value')
-    // .then( snapshot => {
-    //   const dbData = snapshot.val();
-    //   for (let userIDKey in dbData) {
-    //     this.setState({ userID: userIDKey}) 
-    //   }
-    // })
-    // .catch( error => {
-    //   console.log(error);
-    // });
     // ローカルストレージのデータから ID設定
     const _userIDKey = localStorage.getItem('_userID')!;
     if(_userIDKey !== null){
@@ -130,26 +119,27 @@ export default class Root extends React.Component {
 
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   public getDBdatas = (event: any) => {
-    firebaseDB.ref('/').once('value')
+    const _userIDKey = localStorage.getItem('_userID')!;
+    firebaseDB.ref('/users/').once('value')
     .then( snapshot => {
+      console.log("Get data from FirebaseDB! : " + this.state.userID);
       const dbData = snapshot.val();
       // userID をローカルストレージに保存
-      const dbUserID = Object.keys(dbData);
-      // console.log(dbUserID[0]);
-      localStorage.setItem('_userID', dbUserID[0]);
-
-      // スタッツデータ をローカルストレージに保存
-      const dbStatsData: any = Object.values(dbData);
-      let dbStatsDataKey: any = Object.keys(dbStatsData[0]);
-      let dbStatsDataValue: any = Object.values(dbStatsData[0]);
-      for (let i in dbStatsDataKey) {
-        // console.log(dbStatsDataKey[i]);
-        // console.log(dbStatsDataValue[i]);
-        let dbStatsDataValueJSON = JSON.stringify(dbStatsDataValue[i],undefined,1);
-        // console.log(dbStatsDataValueJSON);
-        localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
-      }    
-      console.log('★ All localStorage data overwritten from firebaseDB!');
+      if(dbData[_userIDKey] !== undefined ) {
+        // スタッツデータ をローカルストレージに保存
+        let dbStatsDataKey: any = Object.keys(dbData[_userIDKey]);
+        let dbStatsDataValue: any = Object.values(dbData[_userIDKey]);
+        for (let i in dbStatsDataKey) {
+          // console.log(dbStatsDataKey[i]);
+          // console.log(dbStatsDataValue[i]);
+          let dbStatsDataValueJSON = JSON.stringify(dbStatsDataValue[i],undefined,1);
+          // console.log(dbStatsDataValueJSON);
+          localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
+        }    
+        console.log('★ All localStorage data overwritten from firebaseDB!');
+      } else {
+        console.log('▲ Error => Not found user on firebaseDB...');
+      }
     })
     .catch( error => {
       console.log(error);
@@ -158,7 +148,7 @@ export default class Root extends React.Component {
 
   // userID でテーブル作成して firebaseDB に書き込み
   public valueUpdate = (event: any) => {
-    firebaseDB.ref(this.state.userID).set(this.state.stockApiData)
+    firebaseDB.ref('users/' + this.state.userID).set(this.state.stockApiData)
     .then( () => {
       console.log("FirebaseDB update ok! : " + this.state.userID);
     })
@@ -175,6 +165,7 @@ export default class Root extends React.Component {
 
   // とりあえず40件のデータとって _pubgApiData に保存するやつ
   public getMatches = async (event?: any) => {
+    localStorage.setItem('_userID', this.state.userID);
     if(event){
       console.log("Get start!");
       const pubgApi = new PubgAPI();
@@ -182,7 +173,6 @@ export default class Root extends React.Component {
       .then( value => {
         this.setState({apiData: value});
         const pubgApiData = JSON.stringify(value,undefined,1);
-        localStorage.setItem('_userID', this.state.userID);
         localStorage.setItem('_pubgApiData', pubgApiData);
       }, reason => {
         console.log("Error => " + reason);
@@ -193,6 +183,7 @@ export default class Root extends React.Component {
   // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
   public checkNewData = async (event?: any) => {
     const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!);
+    localStorage.setItem('_userID', this.state.userID);
     const pubgApi = new PubgAPI();
     pubgApi.getMatches(this.state.userID, _playingStartTime)
     .then( value => {
