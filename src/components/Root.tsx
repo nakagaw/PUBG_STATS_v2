@@ -15,6 +15,7 @@ import 'firebase/database';
 // import TextInput from './atoms/TextInput/index';
 // import StatsList from './molecules/StatsList/index';
 
+import Loading from './Loading';
 import StatsDataTable from './StatsDataTable';
 
 import {
@@ -69,8 +70,7 @@ interface IState {
   apiData: any;
   apiDataError: string;
   loading: boolean;
-  success: boolean;
-  checked: boolean;
+  playingState: boolean;
   stockApiData: any;
 }
 
@@ -84,9 +84,8 @@ export default class Root extends React.Component<{}, IState> {
       userID: localStorage.getItem('_userID')!, // ID設定
       apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
       apiDataError: "No data",
-      loading: true,
-      success: true,
-      checked: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
+      loading: false,
+      playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
       stockApiData: [],
     }
   }
@@ -102,8 +101,11 @@ export default class Root extends React.Component<{}, IState> {
     this.createStatsTable();
   }
 
+
+
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   public getDBdatas = (event: any) => {
+    this.setState({loading: true});
     const _userIDKey = localStorage.getItem('_userID')!;
     firebaseDB.ref('/users/').once('value')
     .then( snapshot => {
@@ -125,20 +127,25 @@ export default class Root extends React.Component<{}, IState> {
       } else {
         console.log('▲ Error => Not found user on firebaseDB...');
       }
+      this.setState({loading: false});
     })
     .catch( error => {
       console.log(error);
+      this.setState({loading: false});
     });
   }
 
   // userID でテーブル作成して firebaseDB に書き込み
   public valueUpdate = (event: any) => {
+    this.setState({loading: true});
     firebaseDB.ref('users/' + this.state.userID).set(this.state.stockApiData)
     .then( () => {
       console.log("FirebaseDB update ok! : " + this.state.userID);
+      this.setState({loading: false});
     })
     .catch( error => {
       console.log(error);
+      this.setState({loading: false});
     });
     event.preventDefault();
   }
@@ -150,6 +157,7 @@ export default class Root extends React.Component<{}, IState> {
 
   // とりあえず40件のデータとって _pubgApiData に保存するやつ
   public getMatches = async (event?: any) => {
+    this.setState({loading: true});
     localStorage.setItem('_userID', this.state.userID);
     if(event){
       console.log("Get start!");
@@ -159,14 +167,17 @@ export default class Root extends React.Component<{}, IState> {
         this.setState({apiData: value});
         const pubgApiData = JSON.stringify(value,undefined,1);
         localStorage.setItem('_pubgApiData', pubgApiData);
+        this.setState({loading: false});
       }, reason => {
         console.log("Error => " + reason);
+        this.setState({loading: false});
       } );
     }
   }
 
   // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
   public checkNewData = async (event?: any) => {
+    this.setState({loading: true});
     const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!);
     localStorage.setItem('_userID', this.state.userID);
     const pubgApi = new PubgAPI();
@@ -176,17 +187,19 @@ export default class Root extends React.Component<{}, IState> {
       const pubgApiData = JSON.stringify(value,undefined,1);
       // console.log(pubgApiData);
       localStorage.setItem('_pubgApiData', pubgApiData);
+      this.setState({loading: false});
     }, reason => {
       this.setState({apiDataError: "Should Play!"});
       console.log("Error => " + reason);
+      this.setState({loading: false});
     } );
   }
 
   // Play中かどうかのやつ
-  public playingState = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const playingState = event.target.checked;
-    localStorage.setItem('_playingState', playingState.toString());
-    this.setState({checked: event.target.checked });
+  public playingStateCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const playingStateChecked = event.target.checked;
+    localStorage.setItem('_playingState', playingStateChecked.toString());
+    this.setState({playingState: event.target.checked });
     // ローカルストレージからPlay中かどうかの判定
     const _playingState = localStorage.getItem('_playingState');
     if(_playingState === 'true'){ // Playing Now
@@ -249,7 +262,8 @@ export default class Root extends React.Component<{}, IState> {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AppBar position="sticky" style={{ padding: '6px 20px', marginBottom: '15x' }}>
+        <Loading state={this.state.loading} />
+        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" spacing={4}>
             <Grid item>
               <Typography variant="h6" component="h1" noWrap>
@@ -270,15 +284,15 @@ export default class Root extends React.Component<{}, IState> {
                 />
               </FormControl>
               <Button variant="contained" size="medium" style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.getMatches}>Get Recent 40 Stats!</Button>
-              <Button variant="contained" size="medium" color={!this.state.checked ? 'default' : 'secondary'} style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.checkNewData}>Check updates!</Button>
+              <Button variant="contained" size="medium" color={!this.state.playingState ? 'default' : 'secondary'} style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.checkNewData}>Check updates!</Button>
             </Grid>
             <Grid item>
               <Grid component="label" container alignItems="center" spacing={1}>
                 <Grid item>Not Playing</Grid>
                 <Grid item>
                   <Switch
-                    checked={this.state.checked}
-                    onChange={this.playingState}
+                    checked={this.state.playingState}
+                    onChange={this.playingStateCheck}
                     value="checked"
                     inputProps={{ 'aria-label': 'PLAYING NOW' }}
                   />
@@ -287,7 +301,9 @@ export default class Root extends React.Component<{}, IState> {
               </Grid>
             </Grid>
 
-            <Grid item style={{ flexGrow: 1}}></Grid>
+            <Grid item style={{ flexGrow: 1}}>
+              {this.state.loading && <div style={{ textAlign: 'right'}}>ლ(╹◡╹ლ)</div>}
+            </Grid>
 
             <Grid item>
               <IconButton aria-label="Get DB data" onClick={this.getDBdatas}>
@@ -316,7 +332,7 @@ export default class Root extends React.Component<{}, IState> {
                   <Button
                     variant="outlined"
                     size="small"
-                    disabled={this.state.checked}
+                    disabled={this.state.playingState}
                     onClick={this.createStatsTable}
                     aria-label="move all right"
                   >
@@ -327,13 +343,6 @@ export default class Root extends React.Component<{}, IState> {
             </Grid>
             <Grid item>
               <Paper>
-                {/* <Grid container>
-                    {this.state.stockApiData.map((value: any, i: number) => (
-                    <Grid item key={i} style={{marginRight: '1px'}}>
-                      <StatsDataTable tableData={value}/>
-                    </Grid>
-                    ))}
-                </Grid> */}
                 <Grid container>
                   {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
                     <Grid item key={i} style={{marginRight: '1px'}}>
@@ -341,7 +350,6 @@ export default class Root extends React.Component<{}, IState> {
                     </Grid>
                   ))}
                 </Grid>
-    
               </Paper>
             </Grid>
           </Grid>
