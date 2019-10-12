@@ -62,7 +62,7 @@ const firebaseDB = firebase.database();
 // ============================================
 // ============================================
 
-interface State {
+interface IState {
   hasError: boolean;
   value: string;
   userID: string;
@@ -74,17 +74,21 @@ interface State {
   stockApiData: any;
 }
 
-export default class Root extends React.Component {
-  public state: State = {
-    hasError: false,
-    value: "",
-    userID: "",
-    apiData: [],
-    apiDataError: "No data",
-    loading: true,
-    success: true,
-    checked: false,
-    stockApiData: [],
+export default class Root extends React.Component<{}, IState> {
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      hasError: false,
+      value: "",
+      userID: localStorage.getItem('_userID')!, // ID設定
+      apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
+      apiDataError: "No data",
+      loading: true,
+      success: true,
+      checked: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
+      stockApiData: [],
+    }
   }
 
   // エラーハンドラー的な
@@ -93,28 +97,9 @@ export default class Root extends React.Component {
     console.log('We did catch component error=>', error, errorInfo);
   }
 
-  // 初期化的な
-  componentWillMount() {
-    // ローカルストレージのデータから ID設定
-    const _userIDKey = localStorage.getItem('_userID')!;
-    if(_userIDKey !== null){
-      this.setState({ userID: _userIDKey}) 
-    }
-
-    // ローカルストレージのデータから初期テーブル描画
-    const _apiData = JSON.parse(localStorage.getItem('_pubgApiData')!);
-    if(_apiData !== null){
-      this.setState({ apiData: _apiData })
-    }
+  // テーブル初期化的な
+  componentDidMount() {
     this.createStatsTable();
-    
-    // ローカルストレージからPlay中かどうかの判定
-    const _playingState = localStorage.getItem('_playingState');
-    if(_playingState === 'true'){
-      this.setState({checked: true });
-    } else {
-      this.setState({checked: false });
-    }
   }
 
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
