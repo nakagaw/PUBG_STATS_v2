@@ -59,8 +59,8 @@ const StatsDataTable = ({
         </TableRow>
         {statsData.map((value: any, i: number) => (
             <TableRow key={i}>
-              <StyledTableCell align="left"><span style={{ color: "#79ff79", fontWeight: "bold"}}>{value.kills}</span> <span style={{ color: "#ac77dc", fontStyle: "italic"}}> - {value.damageDealt}</span></StyledTableCell>
-              <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px"}}>{value.gameMode}</StyledTableCell>
+              <StyledTableCell align="left" style={{whiteSpace: "nowrap"}}><span style={{ color: "#79ff79", fontWeight: "bold"}}>{value.kills}</span> <span style={{ color: "#ac77dc", fontStyle: "italic"}}> - {value.damageDealt}</span></StyledTableCell>
+              <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px", whiteSpace: "nowrap"}}>{value.gameMode}</StyledTableCell>
             </TableRow>
         ))}
       </TableBody>

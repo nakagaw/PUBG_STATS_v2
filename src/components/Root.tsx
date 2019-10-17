@@ -71,6 +71,7 @@ interface IState {
   apiDataError: string;
   loading: boolean;
   playingState: boolean;
+  playingDate: string;
   stockApiData: any;
 }
 
@@ -86,6 +87,7 @@ export default class Root extends React.Component<{}, IState> {
       apiDataError: "No data",
       loading: false,
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
+      playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       stockApiData: [],
     }
   }
@@ -100,8 +102,6 @@ export default class Root extends React.Component<{}, IState> {
   componentDidMount() {
     this.createStatsTable();
   }
-
-
 
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   public getDBdatas = (event: any) => {
@@ -155,33 +155,29 @@ export default class Root extends React.Component<{}, IState> {
     this.setState({userID: event.target.value});
   }
 
-  // とりあえず40件のデータとって _pubgApiData に保存するやつ
-  public getMatches = async (event?: any) => {
-    this.setState({loading: true});
-    localStorage.setItem('_userID', this.state.userID);
-    if(event){
-      console.log("Get start!");
-      const pubgApi = new PubgAPI();
-      pubgApi.getMatches(this.state.userID)
-      .then( value => {
-        this.setState({apiData: value});
-        const pubgApiData = JSON.stringify(value,undefined,1);
-        localStorage.setItem('_pubgApiData', pubgApiData);
-        this.setState({loading: false});
-      }, reason => {
-        console.log("Error => " + reason);
-        this.setState({loading: false});
-      } );
-    }
+  // filtereDate の入力フォーム
+  public changefiltereDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({playingDate: event.target.value});
+    // localStorage.setItem('_pubgPlayingStartTime', new Date(event.target.value).toString());
   }
 
-  // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
-  public checkNewData = async (event?: any) => {
+  // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
+  public changefilterDateFormat = (date: string) => {
+    const formatDate = new Date(date).toLocaleString().replace(/\//g,'-').split(/\./)[0];
+    const formatDate1 = formatDate.split(/\s/)[0];
+    let formatDate2 = formatDate.split(/\s/)[1];
+    const zeroFormat = formatDate2.split(":");
+    zeroFormat[0] = ("0"+zeroFormat[0]).slice(-2); // 月の0埋め
+    zeroFormat[1] = ("0"+zeroFormat[1]).slice(-2); // 日の0埋め
+    formatDate2 = zeroFormat[0] + ":" + zeroFormat[1] + ":" + zeroFormat[2];
+    return formatDate1 + "T" + formatDate2;
+  }
+
+  // とりあえず40件のデータとって _pubgApiData に保存するやつ
+  public getMatches = async (id: string, date?: Date) => {
     this.setState({loading: true});
-    const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!);
-    localStorage.setItem('_userID', this.state.userID);
     const pubgApi = new PubgAPI();
-    pubgApi.getMatches(this.state.userID, _playingStartTime)
+    pubgApi.getMatches(id, date)
     .then( value => {
       this.setState({apiData: value});
       const pubgApiData = JSON.stringify(value,undefined,1);
@@ -195,6 +191,39 @@ export default class Root extends React.Component<{}, IState> {
     } );
   }
 
+  // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
+  public checkUpdates = async (event?: any) => {
+    localStorage.setItem('_userID', this.state.userID);
+    // input 入力チェック
+    if(this.state.playingDate !== ""){
+       // input 入力値が強い・なかったらローカルストレージ
+      localStorage.setItem('_pubgPlayingStartTime', new Date(this.state.playingDate).toString());
+      const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!);
+      this.getMatches(this.state.userID, _playingStartTime);
+    } else { // input 未入力
+      this.getMatches(this.state.userID);
+    };
+  }
+
+  // 既存ローカルデータと比較してバックアップ保存するか上書き保存するか
+  public diffLocalDataCheckSave = () => {
+    const _todayStatsData = localStorage.getItem('_pubgApiData')!;
+    const _playedTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
+    const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _playedTime)!;
+    const hash = Math.random().toString(32).substring(2);
+    if(_todayStatsData !== _todayStatsDataCheck) { //空以外の既存データと違うデータがあったら保存
+      if(_todayStatsData !== "[]") {
+        localStorage.setItem("_pubgStatsData__" + _playedTime, _todayStatsData);
+        console.log('◎ Saved to Local strage with Key: ' + _playedTime);
+      }
+    } else { // 同じでも、データがあったら念の為ハッシュ付きで
+      if(_todayStatsData !== null) {
+        localStorage.setItem(_playedTime + "__bak__" + hash, _todayStatsData);
+        console.log('△ Already saved to Local strage, so + hash to Key: ' + _playedTime + "-" + hash);
+      }
+    }
+  }
+
   // Play中かどうかのやつ
   public playingStateCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
     const playingStateChecked = event.target.checked;
@@ -205,24 +234,13 @@ export default class Root extends React.Component<{}, IState> {
     if(_playingState === 'true'){ // Playing Now
       // 開始時間を記録
       const now = new Date();
-      localStorage.setItem('_pubgPlayingStartTime', now.toString());
+      localStorage.setItem('_pubgPlayingStartTime', now.toString()); // こっちは差分チェックで使うのこのフォーマット必須
+      this.setState({playingDate: this.changefilterDateFormat(now.toString()) }); // input用
+      // データクリア
+      localStorage.removeItem('_pubgApiData'); 
+      this.setState({ apiData: [] })
     } else { // Not Playing
-      // Playing Now true中に溜まったデータを開始日キーにしてlocalStorageに _pubgStatsData__ として保存
-      const _todayStatsData = localStorage.getItem('_pubgApiData')!;
-      const _playedTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
-      const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _playedTime)!;
-      const hash = Math.random().toString(32).substring(2);
-      if(_todayStatsData !== _todayStatsDataCheck) { //空以外の既存データと違うデータがあったら保存
-        if(_todayStatsData !== "[]") {
-          localStorage.setItem("_pubgStatsData__" + _playedTime, _todayStatsData);
-          console.log('◎ Saved to Local strage with Key: ' + _playedTime);
-        }
-      } else { // 同じでも、データがあったら念の為ハッシュ付きで
-        if(_todayStatsData !== null) {
-          localStorage.setItem(_playedTime + "__bak__" + hash, _todayStatsData);
-          console.log('△ Already saved to Local strage, so + hash to Key: ' + _playedTime + "-" + hash);
-        }
-      }
+      this.diffLocalDataCheckSave();
     }
   }
   
@@ -247,12 +265,19 @@ export default class Root extends React.Component<{}, IState> {
       this.setState({stockApiData: statsTableData});
     }
     // console.log(statsTableKeyData);
-      // console.log(statsTableData);
+    // console.log(statsTableData);
 
     // Now PlayingストックデータDOMは消して空データで再描画
     localStorage.removeItem('_pubgApiData'); 
     this.setState({ apiData: [] })
   }
+
+  // とってきた過去データを保存 左から右へ
+  public refreshData = (event?: any) => {
+    this.diffLocalDataCheckSave(); //描画中の過去データ保存してからの↓
+    this.createStatsTable(); //データ再描画
+  }
+
 
   render() {
     if (this.state.hasError) {
@@ -264,7 +289,7 @@ export default class Root extends React.Component<{}, IState> {
         <CssBaseline />
         <Loading state={this.state.loading} />
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
-          <Grid container alignItems="center" spacing={4}>
+          <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Grid item>
               <Typography variant="h6" component="h1" noWrap>
                 Hello world
@@ -277,17 +302,32 @@ export default class Root extends React.Component<{}, IState> {
                   label="ID"
                   value={this.state.userID}
                   onChange={this.changeUserID}
+                  disabled={this.state.playingState}
                   placeholder="Placeholder"
                   fullWidth
                   margin="dense"
                   variant="outlined"
                 />
               </FormControl>
-              <Button variant="contained" size="medium" style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.getMatches}>Get Recent 40 Stats!</Button>
-              <Button variant="contained" size="medium" color={!this.state.playingState ? 'default' : 'secondary'} style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.checkNewData}>Check updates!</Button>
+              <FormControl>
+                <TextField
+                  type="datetime-local"
+                  id="filterDate"
+                  label="Filter date"
+                  value={this.state.playingDate}
+                  onChange={this.changefiltereDate}
+                  disabled={this.state.playingState}
+                  placeholder="Placeholder"
+                  fullWidth
+                  margin="dense"
+                  variant="outlined"
+                />
+              </FormControl>
+              {/* <Button variant="contained" disabled={this.state.playingState} size="medium" style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.getMatches}>Get Recent 40 Stats!</Button> */}
+              <Button variant="contained" size="medium" color={!this.state.playingState ? 'default' : 'secondary'} style={{ marginLeft: '16px', marginTop: '10px' }} onClick={this.checkUpdates}>Check updates!</Button>
             </Grid>
             <Grid item>
-              <Grid component="label" container alignItems="center" spacing={1}>
+              <Grid component="label" container alignItems="center" wrap="nowrap" spacing={1}>
                 <Grid item>Not Playing</Grid>
                 <Grid item>
                   <Switch
@@ -297,7 +337,7 @@ export default class Root extends React.Component<{}, IState> {
                     inputProps={{ 'aria-label': 'PLAYING NOW' }}
                   />
                 </Grid>
-                <Grid item>Playing Now</Grid>
+                <Grid item>Playing Now!</Grid>
               </Grid>
             </Grid>
 
@@ -316,24 +356,24 @@ export default class Root extends React.Component<{}, IState> {
           </Grid>
         </AppBar>
         <Container maxWidth={false}>
-          <Grid container spacing={4}>
-            <Grid item>
+          <Grid container spacing={4} wrap="nowrap">
+            <Grid item style={{ padding: '0'}}>
               <Paper>
                 {this.state.apiData.length !== 0 ? (
                   <StatsDataTable tableData={this.state.apiData} />
                 ) : (
-                  <p style={{padding: '20px', marginTop: '30px'}}>{this.state.apiDataError}</p>
+                  <p style={{padding: '10px'}}>{this.state.apiDataError}</p>
                 )}
               </Paper>
             </Grid>
             <Grid item>
-              <Grid container direction="row" alignItems="flex-start" style={{height: '100%', marginTop: '30px'}}>
+              <Grid container direction="row" alignItems="flex-start" style={{height: '100%', marginTop: '20px'}}>
                 <Grid item>
                   <Button
                     variant="outlined"
                     size="small"
                     disabled={this.state.playingState}
-                    onClick={this.createStatsTable}
+                    onClick={this.refreshData}
                     aria-label="move all right"
                   >
                     ≫
@@ -341,16 +381,14 @@ export default class Root extends React.Component<{}, IState> {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item>
-              <Paper>
-                <Grid container>
-                  {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
-                    <Grid item key={i} style={{marginRight: '1px'}}>
-                      <StatsDataTable tableData={this.state.stockApiData[value]}/>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Paper>
+            <Grid item style={{overflowY: 'auto', padding: '0'}}>
+              <Grid container wrap="nowrap">
+                {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
+                  <Grid item key={i} style={{marginRight: '1px'}}>
+                    <StatsDataTable tableData={this.state.stockApiData[value]}/>
+                  </Grid>
+                ))}
+              </Grid>
             </Grid>
           </Grid>
         </Container>

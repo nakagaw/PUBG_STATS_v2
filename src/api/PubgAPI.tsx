@@ -139,9 +139,9 @@ export class PubgAPI {
       // console.log(JSON.stringify(telemetryList,undefined,1));
     }
     // 集計したやつを最後に追加
-    statsDataList.avgDamage  = Math.round(totalDamages/matcheList.length * 10) / 10;
+    statsDataList.avgDamage  = (totalDamages/matcheList.length).toFixed(1);
     statsDataList.totalKills = totalKills;
-    statsDataList.killDeath  = Math.round(totalKills/matcheList.length * 10) / 10;
+    statsDataList.killDeath  = (totalKills/matcheList.length).toFixed(2);
     statsDataList.playedDate = statsDataList.data[matcheList.length -1].matcheDate;
 
     // console.log(statsDataList);
