@@ -16,16 +16,18 @@ const StyledTableHead = styled(TableHead)`
 `;
 
 const StyledTableCell = styled(TableCell)`
-    padding: 1px 6px 1px 6px !important;
-    font-size: 12px;
+  padding: 1px 6px 1px 6px !important;
+  font-size: 12px;
 `;
 const StyledTableCellA = styled(TableCell)`
-    background-color: #79ff79;
-    color: black !important;
+  padding: 4px 8px 4px 8px !important;
+  background-color: #79ff79;
+  color: black !important;
 `;
 const StyledTableCellB = styled(TableCell)`
-    background-color: #ac77dc;
-    color: black !important;
+  padding: 4px 8px 4px 8px !important;
+  background-color: #ac77dc;
+  color: black !important;
 `;
 
 
@@ -55,11 +57,36 @@ const StatsDataTable = ({
           <StyledTableCellA align="center" component="th" colSpan={2}>{killDeath}</StyledTableCellA>
         </TableRow>
         <TableRow>
-          <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} ({avgDamage})</StyledTableCellB>
+          <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} (<span style={{ fontStyle: "italic"}}>{avgDamage}</span>)</StyledTableCellB>
         </TableRow>
         {statsData.map((value: any, i: number) => (
             <TableRow key={i}>
-              <StyledTableCell align="left" style={{whiteSpace: "nowrap"}}><span style={{ color: "#79ff79", fontWeight: "bold"}}>{value.kills}</span> <span style={{ color: "#ac77dc", fontStyle: "italic"}}> - {value.damageDealt}</span></StyledTableCell>
+              <StyledTableCell align="left" style={{whiteSpace: "nowrap"}}>
+                {(() => {
+                  if (value.kills >= 7) {
+                    return <span style={{ color: "#ff000c"}}>{value.kills}</span>
+                  } else if (value.kills >= 5) {
+                    return <span style={{ color: "#ff00c8"}}>{value.kills}</span>
+                  } else if (value.kills >= 4) {
+                    return <span style={{ color: "#ff00f8"}}>{value.kills}</span>
+                  } else if (value.kills >= 3) {
+                    return <span style={{ color: "#d24aff"}}>{value.kills}</span>
+                  } else if (value.kills >= 2) {
+                    return <span style={{ color: "#ac77dc"}}>{value.kills}</span>
+                  } else if (value.kills >= 1) {
+                    return <span style={{ color: "#ac77dc"}}>{value.kills}</span>
+                  } else {
+                    return <span style={{ color: "#4c4c4c"}}>{value.kills}</span>
+                  }
+                })()}
+                {value.damageDealt > 0 ?
+                  (
+                    <span style={{ color:  "#ac77dc", fontStyle: "italic"}}> - {value.damageDealt}</span>
+                  ) : (
+                    <span style={{ color:  "#4c4c4c"}}> - {value.damageDealt}</span>
+                  )
+                }
+              </StyledTableCell>
               <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px", whiteSpace: "nowrap"}}>{value.gameMode}</StyledTableCell>
             </TableRow>
         ))}
