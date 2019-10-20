@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 // API Classes
-import { PubgAPI } from '../api/PubgAPI';
+import { PubgAPI } from './api/PubgAPI';
 
 // Firebase
 import * as firebase from 'firebase/app';
@@ -9,15 +9,14 @@ import 'firebase/auth';
 import 'firebase/database';
 
 // Components
-import Navbar from './Navbar';
-import Loading from './Loading';
-import StatsDataTable from './StatsDataTable';
+import Loading from './components/Loading';
+import Navbar from './components/Navbar';
+import StatsDataTable from './components/StatsDataTable';
 
 // Material UI
 import {
-  createMuiTheme,
-  CssBaseline,
   AppBar,
+  Toolbar,
   Container,
   Typography,
   FormControl,
@@ -33,13 +32,6 @@ import {
   CloudUpload,
   CloudDownload,
 } from '@material-ui/icons';
-
-import { ThemeProvider } from '@material-ui/styles';
-const theme = createMuiTheme({
-  palette: {
-    type: 'dark',
-  },
-});
 
 // ============================================
 // firebase
@@ -281,16 +273,16 @@ export default class App extends React.Component<{}, IState> {
       return <h1>Something went wrong.</h1>;
     }
     return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <React.Fragment>
         <Loading state={this.state.loading} />
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
-            <Grid item>
+            <Toolbar>
+              <Navbar />
               <Typography variant="h6" component="h1" noWrap>
                 TODAY's STATS
               </Typography>
-            </Grid>
+            </Toolbar>
             <Grid item>
               <FormControl>
                 <TextField
@@ -341,10 +333,6 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
             <Grid item style={{ flexGrow: 1}}>
               {this.state.loading && <div style={{ textAlign: 'right'}}>ლ(╹◡╹ლ)</div>}
-              
-            </Grid>
-            <Grid item>
-              <Navbar />
             </Grid>
             <Grid item>
               <IconButton aria-label="Get DB data" onClick={this.getDBdatas}>
@@ -393,7 +381,7 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
           </Grid>
         </Container>
-      </ThemeProvider>
+      </React.Fragment>
     );
   }
 }
