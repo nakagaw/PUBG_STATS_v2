@@ -3,11 +3,6 @@ import * as React from 'react';
 // API Classes
 import { PubgAPI } from './api/PubgAPI';
 
-// Firebase
-import * as firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/database';
-
 // Components
 import Loading from './components/Loading';
 import Navbar from './components/Navbar';
@@ -33,20 +28,8 @@ import {
   CloudDownload,
 } from '@material-ui/icons';
 
-// ============================================
 // firebase
-// ============================================
-const firebaseConfig = {
-  apiKey: 'AIzaSyB-6fr79R883Xq7ycvFg1tPX5mGJZdrWd4',
-  authDomain: 'my-pubg-stats.firebaseapp.com',
-  databaseURL: 'https://my-pubg-stats.firebaseio.com',
-  projectId: 'my-pubg-stats',
-  storageBucket: 'my-pubg-stats.appspot.com',
-  messagingSenderId: '2934131777',
-  appId: '1:2934131777:web:c4aec14805014dc4'
-};
-firebase.initializeApp(firebaseConfig);
-const firebaseDB = firebase.database();
+import { firebaseDB } from './firebaseConfig'
 
 // ============================================
 // ============================================
@@ -110,7 +93,7 @@ export default class App extends React.Component<{}, IState> {
           let dbStatsDataValueJSON = JSON.stringify(dbStatsDataValue[i],undefined,1);
           // console.log(dbStatsDataValueJSON);
           localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
-        }    
+        }
         console.log('★ All localStorage data overwritten from firebaseDB!');
       } else {
         console.log('▲ Error => Not found user on firebaseDB...');
