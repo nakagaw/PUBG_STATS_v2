@@ -104,7 +104,6 @@ const Navbar = () => {
     setOpen(false);
   };
 
-  
   return(
     <React.Fragment>
       <IconButton

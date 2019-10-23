@@ -51,13 +51,13 @@ export class PubgAPI {
     // 適当に40試合の matches URL 取得してリスト化
     // =====================================================
     let matchesReqestURL = [];
-    for (let x = 0; x < 40; x++) {
+    for (let x = 0; x < 50; x++) {
       matchesReqestURL.push('/shards/steam/matches/' + playerMatchData[x].id);
     }
     // console.log(matchesReqestURL);
 
 
-    // 40試合のうち、トレモ除いた試合のJSONデータにする
+    // 50試合のうち、トレモ除いた試合のJSONデータにする
     // =====================================================
     let matcheList: any = [];
     for (let y = 0; y < matchesReqestURL.length; y++) {

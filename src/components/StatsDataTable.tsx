@@ -33,17 +33,40 @@ const StyledTableCellB = styled(TableCell)`
 
 interface IProps {
   tableData: any;
+  filterKey?: 'all' | 'solo-fpp' | 'squad-fpp';
 }
 
 const StatsDataTable = ({
-  tableData
+  tableData,
+  filterKey,
 }: IProps) => {
 
-    const playedDate = tableData.playedDate;
-    const statsData = tableData.data;
-    const totalKills = tableData.totalKills;
-    const avgDamage  = tableData.avgDamage;
-    const killDeath  = tableData.killDeath;
+  // filter stats data
+  const filteredData = tableData.data.filter((item: any, index: number) => {
+    if ( filterKey === "all" ) {
+      return item
+    } else if ( filterKey === item.gameMode ) {
+      return item
+    }
+    return null;
+  })
+  // console.log(filteredData)
+
+  // KD & totalKills
+  const filteredKills = filteredData.map((row: any) => {
+    return row.kills;
+  });
+  const killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
+  const totalKills = filteredKills.reduce((current: any, items: any) => current+=items, 0);
+
+  // avg damages
+  const filteredDamageDealt = filteredData.map((row: any) => {
+    return row.damageDealt;
+  });
+  const avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
+
+  const playedDate = tableData.playedDate;
+  const statsData  = filteredData;
 
   return (
     <Table size="small">

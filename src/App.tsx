@@ -15,17 +15,23 @@ import {
   Container,
   Typography,
   FormControl,
+  FormControlLabel,
   TextField,
   IconButton,
   Button,
   Switch,
   Paper,
   Grid,
+  Menu,
+  // MenuItem,
+  Radio,
+  RadioGroup,
 } from '@material-ui/core';
 
 import {
   CloudUpload,
   CloudDownload,
+  FilterList,
 } from '@material-ui/icons';
 
 // firebase
@@ -44,6 +50,8 @@ interface IState {
   playingState: boolean;
   playingDate: string;
   stockApiData: any;
+  filterMenuState: any;
+  filterKey?: any;
 }
 
 export default class App extends React.Component<{}, IState> {
@@ -60,6 +68,8 @@ export default class App extends React.Component<{}, IState> {
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       stockApiData: [],
+      filterMenuState: null,
+      filterKey: "all",
     }
   }
 
@@ -249,6 +259,19 @@ export default class App extends React.Component<{}, IState> {
     this.createStatsTable(); //データ再描画
   }
 
+  // フィルターボタン
+  public filterMenuClick = (event: React.MouseEvent<HTMLDataElement>) => {
+    this.setState({filterMenuState: event.currentTarget});
+  }
+  public filterMenuClose = (event?: any) => {
+    this.setState({filterMenuState: null});
+  }
+  public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log((event.target as HTMLInputElement).value);
+    this.setState({filterKey: (event.target as HTMLInputElement).value});
+    this.createStatsTable(); //データ再描画
+    this.filterMenuClose();
+  }
 
   render() {
     if (this.state.hasError) {
@@ -267,7 +290,7 @@ export default class App extends React.Component<{}, IState> {
               </Typography>
             </Toolbar>
             <Grid item>
-              <FormControl>
+              <FormControl style={{ width: '130px' }}>
                 <TextField
                   id="pubgID"
                   label="ID"
@@ -282,7 +305,7 @@ export default class App extends React.Component<{}, IState> {
                   }}
                 />
               </FormControl>
-              <FormControl style={{ marginLeft: '7px', marginRight: '13px' }}>
+              <FormControl style={{ marginLeft: '7px', marginRight: '13px', width: '250px' }}>
                 <TextField
                   type="datetime-local"
                   id="filterDate"
@@ -315,7 +338,7 @@ export default class App extends React.Component<{}, IState> {
               </Grid>
             </Grid>
             <Grid item style={{ flexGrow: 1}}>
-              {this.state.loading && <div style={{ textAlign: 'right'}}>ლ(╹◡╹ლ)</div>}
+              {this.state.loading && <div style={{ textAlign: 'right', fontSize: '12px'}}>ლ(╹◡╹ლ)</div>}
             </Grid>
             <Grid item>
               <IconButton aria-label="Get DB data" onClick={this.getDBdatas}>
@@ -324,6 +347,35 @@ export default class App extends React.Component<{}, IState> {
               <IconButton aria-label="Save DB data" onClick={this.valueUpdate}>
                 <CloudUpload />
               </IconButton>
+              <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick}>
+                <FilterList />
+              </IconButton>
+              <Menu
+                id="simple-menu"
+                anchorEl={this.state.filterMenuState}
+                keepMounted
+                open={Boolean(this.state.filterMenuState)}
+                onClose={this.filterMenuClose}
+              >
+                <RadioGroup aria-label="gender" name="filter" value={this.state.filterKey} onChange={this.filterKeyChange} 
+                style={{padding: "10px 15px"}}>
+                  <FormControlLabel
+                    value="all"
+                    control={<Radio />}
+                    label="All"
+                  />
+                  <FormControlLabel
+                    value="solo-fpp"
+                    control={<Radio />}
+                    label="Solo FPP"
+                  />
+                  <FormControlLabel
+                    value="squad-fpp"
+                    control={<Radio />}
+                    label="Squad FPP"
+                  />
+                </RadioGroup>
+              </Menu>
             </Grid>
           </Grid>
         </AppBar>
@@ -357,7 +409,7 @@ export default class App extends React.Component<{}, IState> {
               <Grid container wrap="nowrap">
                 {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
                   <Grid item key={i} style={{marginRight: '1px'}}>
-                    <StatsDataTable tableData={this.state.stockApiData[value]}/>
+                    <StatsDataTable tableData={this.state.stockApiData[value]} filterKey={this.state.filterKey} />
                   </Grid>
                 ))}
               </Grid>

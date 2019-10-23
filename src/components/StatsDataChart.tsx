@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  // Brush
 } from 'recharts';
 
 // Material UI
@@ -45,22 +46,43 @@ class CustomizedAxisTick extends PureComponent<Partial<CustomizedLabelProps>> {
 
 interface IProps {
   chartData: any;
+  filterKey?: 'all' | 'solo-fpp' | 'squad-fpp';
 }
 
 const StatsDataChart = ({
-  chartData
+  chartData,
+  filterKey,
 }: IProps) => {
 
-  // console.log(chartData);
+  // console.log(Object.values(chartData));
+
   const statsData: any = [];
   // 左から右にするために for (let i = 0; i < Object.keys(chartData).length; i++) { ではない
   for (let i = Object.keys(chartData).length - 1; i >= 0; i--) {
-    console.log(i)
     let data: any = Object.values(chartData)[i];
-    let statsDataObject: any = {};
+    let statsDataObject: any = {}
+    // filter stats data
+    const filteredData = data.data.filter((item: any, index: number) => {
+      if ( filterKey === "all" ) {
+        return item
+      } else if ( filterKey === item.gameMode ) {
+        return item
+      }
+      return null;
+    })
+    // KD & totalKills
+    const filteredKills = filteredData.map((row: any) => {
+      return row.kills;
+    });
+    statsDataObject.killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
+
+    // avg damages
+    const filteredDamageDealt = filteredData.map((row: any) => {
+      return row.damageDealt;
+    });
+    statsDataObject.avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
+
     statsDataObject.name = data.playedDate;
-    statsDataObject.killDeath = data.killDeath;
-    statsDataObject.avgDamage = data.avgDamage;
     statsData.push(statsDataObject);
   }
   // console.log(statsData);
@@ -89,6 +111,7 @@ const StatsDataChart = ({
             <YAxis />
             <CartesianGrid stroke="#666" strokeDasharray="2 2" />
             <Line type="linear" dataKey="avgDamage" stroke="#ac77dc" fill="#ac77dc" strokeWidth="2" dot={{ r: 4 }} label={<CustomizedLabel />} />
+            {/* <Brush /> */}
           </LineChart>
         </ResponsiveContainer>
       </div>
