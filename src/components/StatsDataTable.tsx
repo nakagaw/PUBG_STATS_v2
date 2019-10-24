@@ -33,19 +33,19 @@ const StyledTableCellB = styled(TableCell)`
 
 interface IProps {
   tableData: any;
-  filterKey?: 'all' | 'solo-fpp' | 'squad-fpp';
+  filterGameMode?: 'all' | 'solo-fpp' | 'squad-fpp';
 }
 
 const StatsDataTable = ({
   tableData,
-  filterKey,
+  filterGameMode,
 }: IProps) => {
 
   // filter stats data
   const filteredData = tableData.data.filter((item: any, index: number) => {
-    if ( filterKey === "all" ) {
+    if ( filterGameMode === "all" ) {
       return item
-    } else if ( filterKey === item.gameMode ) {
+    } else if ( filterGameMode === item.gameMode ) {
       return item
     }
     return null;

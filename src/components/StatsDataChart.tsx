@@ -46,12 +46,12 @@ class CustomizedAxisTick extends PureComponent<Partial<CustomizedLabelProps>> {
 
 interface IProps {
   chartData: any;
-  filterKey?: 'all' | 'solo-fpp' | 'squad-fpp';
+  filterGameMode?: 'all' | 'solo-fpp' | 'squad-fpp';
 }
 
 const StatsDataChart = ({
   chartData,
-  filterKey,
+  filterGameMode,
 }: IProps) => {
 
   console.log(Object.values(chartData));
@@ -63,9 +63,9 @@ const StatsDataChart = ({
     let statsDataObject: any = {}
     // filter stats data
     const filteredData = data.data.filter((item: any, index: number) => {
-      if ( filterKey === "all" ) {
+      if ( filterGameMode === "all" ) {
         return item
-      } else if ( filterKey === item.gameMode ) {
+      } else if ( filterGameMode === item.gameMode ) {
         return item
       }
       return null;
@@ -90,7 +90,7 @@ const StatsDataChart = ({
   return (
     <React.Fragment>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "30px"}}>
-       Kills/Deathes ({filterKey})
+       Kills/Deathes ({filterGameMode})
       </Typography>
       <div style={{width: "100%", height: "200px"}}>
         <ResponsiveContainer>
@@ -102,7 +102,7 @@ const StatsDataChart = ({
         </ResponsiveContainer>
       </div>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "20px"}}>
-      Average Damages ({filterKey})
+      Average Damages ({filterGameMode})
       </Typography>
       <div style={{width: "100%", height: "270px"}}>
         <ResponsiveContainer>

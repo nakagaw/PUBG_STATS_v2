@@ -25,7 +25,7 @@ import {
 interface IState {
   stockApiData: any;
   filterMenuState: any;
-  filterKey?: any;
+  filterGameMode?: any;
 }
 
 export default class Chart extends React.Component<{}, IState> {
@@ -35,7 +35,7 @@ export default class Chart extends React.Component<{}, IState> {
     this.state = {
       stockApiData: [],
       filterMenuState: null,
-      filterKey: "all",
+      filterGameMode: "all",
     }
   }
 
@@ -75,9 +75,9 @@ export default class Chart extends React.Component<{}, IState> {
   public filterMenuClose = (event?: any) => {
     this.setState({filterMenuState: null});
   }
-  public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  public filterGameModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log((event.target as HTMLInputElement).value);
-    this.setState({filterKey: (event.target as HTMLInputElement).value});
+    this.setState({filterGameMode: (event.target as HTMLInputElement).value});
     this.createStatsTable(); //データ再描画
     this.filterMenuClose();
   }
@@ -105,7 +105,7 @@ export default class Chart extends React.Component<{}, IState> {
                 open={Boolean(this.state.filterMenuState)}
                 onClose={this.filterMenuClose}
               >
-                <RadioGroup aria-label="gender" name="filter" value={this.state.filterKey} onChange={this.filterKeyChange} 
+                <RadioGroup aria-label="gender" name="filter" value={this.state.filterGameMode} onChange={this.filterGameModeChange} 
                 style={{padding: "10px 15px"}}>
                   <FormControlLabel
                     value="all"
@@ -128,7 +128,7 @@ export default class Chart extends React.Component<{}, IState> {
           </Grid>
         </AppBar>
         <Container maxWidth={false}>
-          <StatsDataChart chartData={this.state.stockApiData} filterKey={this.state.filterKey} />
+          <StatsDataChart chartData={this.state.stockApiData} filterGameMode={this.state.filterGameMode} />
         </Container>
       </React.Fragment>
     );

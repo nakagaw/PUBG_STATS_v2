@@ -26,6 +26,7 @@ import {
   // MenuItem,
   Radio,
   RadioGroup,
+  Divider,
 } from '@material-ui/core';
 
 import {
@@ -51,7 +52,8 @@ interface IState {
   playingDate: string;
   stockApiData: any;
   filterMenuState: any;
-  filterKey?: any;
+  filterGameMode?: any;
+  filterSeason?: any;
 }
 
 export default class App extends React.Component<{}, IState> {
@@ -61,7 +63,7 @@ export default class App extends React.Component<{}, IState> {
     this.state = {
       hasError: false,
       value: "",
-      userID: localStorage.getItem('_userID') ? localStorage.getItem('_userID')! : "UG_boy", // ID設定
+      userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
       apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
       apiDataError: "No data",
       loading: false,
@@ -69,7 +71,8 @@ export default class App extends React.Component<{}, IState> {
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       stockApiData: [],
       filterMenuState: null,
-      filterKey: "all",
+      filterGameMode: "all",
+      filterSeason: localStorage.getItem('_pubgFilterSeason') ? localStorage.getItem('_pubgFilterSeason')! : "current-season",
     }
   }
 
@@ -104,6 +107,7 @@ export default class App extends React.Component<{}, IState> {
           localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
         }
         console.log('★ All localStorage data overwritten from firebaseDB!');
+        this.createStatsTable(); //データ再描画
       } else {
         console.log('▲ Error => Not found user on firebaseDB...');
       }
@@ -132,13 +136,13 @@ export default class App extends React.Component<{}, IState> {
 
   // userID の入力フォーム
   public changeUserID = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({userID: event.target.value});
+    this.setState({userID: (event.target as HTMLInputElement).value});
   }
 
   // filtereDate の入力フォーム
   public changefiltereDate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({playingDate: event.target.value});
-    // localStorage.setItem('_pubgPlayingStartTime', new Date(event.target.value).toString());
+    this.setState({playingDate: (event.target as HTMLInputElement).value});
+    // localStorage.setItem('_pubgPlayingStartTime', new Date((event.target as HTMLInputElement).value).toString());
   }
 
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
@@ -154,7 +158,7 @@ export default class App extends React.Component<{}, IState> {
     return formatDate1 + "T" + formatDate2;
   }
 
-  // とりあえず40件のデータとって _pubgApiData に保存するやつ
+  // とりあえず50件のデータとって _pubgApiData に保存するやつ
   public getMatches = async (id: string, date?: Date) => {
     this.setState({loading: true});
     const pubgApi = new PubgAPI();
@@ -174,7 +178,7 @@ export default class App extends React.Component<{}, IState> {
 
   // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
   public checkUpdates = async (event?: any) => {
-    localStorage.setItem('_userID', this.state.userID);
+    localStorage.setItem('_pubgUserID', this.state.userID);
     // input 入力チェック
     if(this.state.playingDate !== ""){
        // input 入力値が強い・なかったらローカルストレージ
@@ -189,18 +193,19 @@ export default class App extends React.Component<{}, IState> {
   // 既存ローカルデータと比較してバックアップ保存するか上書き保存するか
   public diffLocalDataCheckSave = () => {
     const _todayStatsData = localStorage.getItem('_pubgApiData')!;
-    const _playedTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
-    const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _playedTime)!;
+    // JSON.parse(_todayStatsData).playedDate じゃなくて、_pubgPlayingStartTime なのは、データ作った日をキーにする意味で
+    const _timeStamp = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
+    const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _timeStamp)!;
     const hash = Math.random().toString(32).substring(2);
     if(_todayStatsData !== _todayStatsDataCheck) { //空以外の既存データと違うデータがあったら保存
       if(_todayStatsData !== "[]") {
-        localStorage.setItem("_pubgStatsData__" + _playedTime, _todayStatsData);
-        console.log('◎ Saved to Local strage with Key: ' + _playedTime);
+        localStorage.setItem("_pubgStatsData__" + _timeStamp, _todayStatsData);
+        console.log('◎ Saved to Local strage with Key: ' + _timeStamp);
       }
     } else { // 同じでも、データがあったら念の為ハッシュ付きで
       if(_todayStatsData !== null) {
-        localStorage.setItem(_playedTime + "__bak__" + hash, _todayStatsData);
-        console.log('△ Already saved to Local strage, so + hash to Key: ' + _playedTime + "-" + hash);
+        localStorage.setItem(_timeStamp + "__bak__" + hash, _todayStatsData);
+        console.log('△ Already saved to Local strage, so + hash to Key: ' + _timeStamp + "-" + hash);
       }
     }
   }
@@ -237,12 +242,28 @@ export default class App extends React.Component<{}, IState> {
         );
       }
     }
-    for (let i = 0; i < statsTableKeyData.length; i++) {
-        statsTableData[statsTableKeyData[i]] = JSON.parse(localStorage.getItem(statsTableKeyData[i])!);
+
+    // シーズンフィルタ
+    const seasonDate: any = {
+      "current-season" : ["2019/10/22","2020/01/30"],
+      "season-4" : ["2019/07/24","2019/10/22"]
     }
+    for (let i = 0; i < statsTableKeyData.length; i++) {
+      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeyData[i])!);
+      const _filterSeason = this.state.filterSeason;
+      const seasonStart = new Date(seasonDate[_filterSeason][0]);
+      const seasonEnd = new Date(seasonDate[_filterSeason][1]);
+      const playedDate = new Date(_statsTableData.playedDate);
+      if ( seasonStart < playedDate && seasonEnd >= playedDate) {
+        // season 内データだけ配列追加
+        statsTableData[statsTableKeyData[i]] = _statsTableData;
+      }
+    }
+
     if(statsTableData !== null){
       this.setState({stockApiData: statsTableData});
     }
+
     // console.log(statsTableKeyData);
     // console.log(statsTableData);
   }
@@ -267,11 +288,18 @@ export default class App extends React.Component<{}, IState> {
   public filterMenuClose = (event?: any) => {
     this.setState({filterMenuState: null});
   }
-  public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log((event.target as HTMLInputElement).value);
-    this.setState({filterKey: (event.target as HTMLInputElement).value});
+  public filterGameModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({filterGameMode: (event.target as HTMLInputElement).value});
     this.createStatsTable(); //データ再描画
     this.filterMenuClose();
+  }
+  public filterSeasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({filterSeason: (event.target as HTMLInputElement).value});
+    localStorage.setItem('_pubgFilterSeason', (event.target as HTMLInputElement).value);
+    setTimeout(() => { // アニメーションのせい？か、これがないと setState できてない。promise 化したほうが良さそう
+      this.createStatsTable(); //データ再描画
+      this.filterMenuClose();
+    }, 10)
   }
 
   render() {
@@ -358,7 +386,7 @@ export default class App extends React.Component<{}, IState> {
                 open={Boolean(this.state.filterMenuState)}
                 onClose={this.filterMenuClose}
               >
-                <RadioGroup aria-label="gender" name="filter" value={this.state.filterKey} onChange={this.filterKeyChange} 
+                <RadioGroup aria-label="Game mode filter" name="filterGameModeGroup" value={this.state.filterGameMode} onChange={this.filterGameModeChange} 
                 style={{padding: "10px 15px"}}>
                   <FormControlLabel
                     value="all"
@@ -376,6 +404,20 @@ export default class App extends React.Component<{}, IState> {
                     label="Squad FPP"
                   />
                 </RadioGroup>
+                <Divider variant="middle" />
+                <RadioGroup aria-label="Season filter" name="filterSeasonGroup" value={this.state.filterSeason} onChange={this.filterSeasonChange}
+                style={{padding: "10px 15px"}}>
+                  <FormControlLabel
+                    value="current-season"
+                    control={<Radio />}
+                    label="Season 5"
+                  />
+                  <FormControlLabel
+                    value="season-4"
+                    control={<Radio />}
+                    label="Season 4"
+                  />
+                </RadioGroup>
               </Menu>
             </Grid>
           </Grid>
@@ -385,7 +427,7 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{ padding: '0'}}>
               <Paper>
                 {this.state.apiData.length !== 0 ? (
-                  <StatsDataTable tableData={this.state.apiData} filterKey={this.state.filterKey} />
+                  <StatsDataTable tableData={this.state.apiData} filterGameMode={this.state.filterGameMode} />
                 ) : (
                   <p style={{padding: '10px', minWidth: "127px", textAlign: "center"}}>{this.state.apiDataError}</p>
                 )}
@@ -410,7 +452,7 @@ export default class App extends React.Component<{}, IState> {
               <Grid container wrap="nowrap">
                 {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
                   <Grid item key={i} style={{marginRight: '1px'}}>
-                    <StatsDataTable tableData={this.state.stockApiData[value]} filterKey={this.state.filterKey} />
+                    <StatsDataTable tableData={this.state.stockApiData[value]} filterGameMode={this.state.filterGameMode} />
                   </Grid>
                 ))}
               </Grid>
