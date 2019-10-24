@@ -61,7 +61,7 @@ export default class App extends React.Component<{}, IState> {
     this.state = {
       hasError: false,
       value: "",
-      userID: localStorage.getItem('_userID')!, // ID設定
+      userID: localStorage.getItem('_userID') ? localStorage.getItem('_userID')! : "UG_boy", // ID設定
       apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
       apiDataError: "No data",
       loading: false,
@@ -87,16 +87,15 @@ export default class App extends React.Component<{}, IState> {
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   public getDBdatas = (event: any) => {
     this.setState({loading: true});
-    const _userIDKey = localStorage.getItem('_userID')!;
     firebaseDB.ref('/users/').once('value')
     .then( snapshot => {
       console.log("Get data from FirebaseDB! : " + this.state.userID);
       const dbData = snapshot.val();
       // userID をローカルストレージに保存
-      if(dbData[_userIDKey] !== undefined ) {
+      if(dbData[this.state.userID] !== undefined ) {
         // スタッツデータ をローカルストレージに保存
-        let dbStatsDataKey: any = Object.keys(dbData[_userIDKey]);
-        let dbStatsDataValue: any = Object.values(dbData[_userIDKey]);
+        let dbStatsDataKey: any = Object.keys(dbData[this.state.userID]);
+        let dbStatsDataValue: any = Object.values(dbData[this.state.userID]);
         for (let i in dbStatsDataKey) {
           // console.log(dbStatsDataKey[i]);
           // console.log(dbStatsDataValue[i]);
@@ -144,7 +143,8 @@ export default class App extends React.Component<{}, IState> {
 
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
   public changefilterDateFormat = (date: string) => {
-    const formatDate = new Date(date).toLocaleString().replace(/\//g,'-').split(/\./)[0];
+    const formatDate = new Date(date).toLocaleString('ja-JP').replace(/\//g,'-').split(/\./)[0];
+    console.log(formatDate );
     const formatDate1 = formatDate.split(/\s/)[0];
     let formatDate2 = formatDate.split(/\s/)[1];
     const zeroFormat = formatDate2.split(":");
@@ -217,9 +217,7 @@ export default class App extends React.Component<{}, IState> {
       const now = new Date();
       localStorage.setItem('_pubgPlayingStartTime', now.toString()); // こっちは差分チェックで使うのこのフォーマット必須
       this.setState({playingDate: this.changefilterDateFormat(now.toString()) }); // input用
-      // データクリア
-      localStorage.removeItem('_pubgApiData'); 
-      this.setState({ apiData: [] })
+      this.clearPlayingData();// データクリア
     } else { // Not Playing
       this.diffLocalDataCheckSave();
     }
@@ -247,8 +245,10 @@ export default class App extends React.Component<{}, IState> {
     }
     // console.log(statsTableKeyData);
     // console.log(statsTableData);
+  }
 
-    // Now PlayingストックデータDOMは消して空データで再描画
+  // Play中のデータとローカルストレージ消す
+  public clearPlayingData = () => {
     localStorage.removeItem('_pubgApiData'); 
     this.setState({ apiData: [] })
   }
@@ -257,6 +257,7 @@ export default class App extends React.Component<{}, IState> {
   public refreshData = (event?: any) => {
     this.diffLocalDataCheckSave(); //描画中の過去データ保存してからの↓
     this.createStatsTable(); //データ再描画
+    this.clearPlayingData();
   }
 
   // フィルターボタン
@@ -341,13 +342,13 @@ export default class App extends React.Component<{}, IState> {
               {this.state.loading && <div style={{ textAlign: 'right', fontSize: '12px'}}>ლ(╹◡╹ლ)</div>}
             </Grid>
             <Grid item>
-              <IconButton aria-label="Get DB data" onClick={this.getDBdatas}>
+              <IconButton aria-label="Get DB data" onClick={this.getDBdatas} disabled={this.state.playingState}>
                 <CloudDownload />
               </IconButton>
-              <IconButton aria-label="Save DB data" onClick={this.valueUpdate}>
+              <IconButton aria-label="Save DB data" onClick={this.valueUpdate} disabled={this.state.playingState}>
                 <CloudUpload />
               </IconButton>
-              <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick}>
+              <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick} disabled={this.state.playingState}>
                 <FilterList />
               </IconButton>
               <Menu
@@ -384,7 +385,7 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{ padding: '0'}}>
               <Paper>
                 {this.state.apiData.length !== 0 ? (
-                  <StatsDataTable tableData={this.state.apiData} />
+                  <StatsDataTable tableData={this.state.apiData} filterKey={this.state.filterKey} />
                 ) : (
                   <p style={{padding: '10px', minWidth: "127px", textAlign: "center"}}>{this.state.apiDataError}</p>
                 )}

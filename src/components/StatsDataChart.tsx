@@ -54,7 +54,7 @@ const StatsDataChart = ({
   filterKey,
 }: IProps) => {
 
-  // console.log(Object.values(chartData));
+  console.log(Object.values(chartData));
 
   const statsData: any = [];
   // 左から右にするために for (let i = 0; i < Object.keys(chartData).length; i++) { ではない

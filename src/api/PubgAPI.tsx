@@ -96,14 +96,12 @@ export class PubgAPI {
     let statsDataList: any = {};
     statsDataList["data"] = [];
     // let telemetryList = [];
-    let totalDamages: number = 0;
-    let totalKills: number  = 0;
 
     // マッチデータ
     for (let y = 0; y < matcheList.length; y++) {
       let statsData: StatsData = {};
       let createdAt   = new Date(matcheList[y].data.attributes.createdAt);
-      let createdAtDate  = createdAt.toLocaleString().split(/\s/); // JSTに変換して日時で分ける
+      let createdAtDate  = createdAt.toLocaleString('ja-JP').split(/\s/); // JSTに変換して日時で分ける
       let zeroFormat = createdAtDate[0].split("/");
       zeroFormat[1] = ("0"+zeroFormat[1]).slice(-2); // 月の0埋め
       zeroFormat[2] = ("0"+zeroFormat[2]).slice(-2); // 日の0埋め
@@ -121,8 +119,6 @@ export class PubgAPI {
             statsData.winPlace    = matchsDetaDetail[z].attributes.stats.winPlace;
             statsData.damageDealt = Math.round(matchsDetaDetail[z].attributes.stats.damageDealt * 10) / 10;
             statsData.kills       = matchsDetaDetail[z].attributes.stats.kills;
-            totalDamages +=  statsData.damageDealt!;
-            totalKills +=   statsData.kills!;
           }
         }
         // stock telemetry data json
@@ -138,10 +134,7 @@ export class PubgAPI {
       // console.log(JSON.stringify(matchsDetaDetail,undefined,1));
       // console.log(JSON.stringify(telemetryList,undefined,1));
     }
-    // 集計したやつを最後に追加
-    statsDataList.avgDamage  = (totalDamages/matcheList.length).toFixed(1);
-    statsDataList.totalKills = totalKills;
-    statsDataList.killDeath  = (totalKills/matcheList.length).toFixed(2);
+    // 日付を最後に追加
     statsDataList.playedDate = statsDataList.data[matcheList.length -1].matcheDate;
 
     // console.log(statsDataList);

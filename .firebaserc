@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "my-pubg-stats"
+    "default": "my-pubg-stats",
+    "staging": "my-pubg-stats"
   }
 }

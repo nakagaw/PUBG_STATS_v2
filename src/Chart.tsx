@@ -128,7 +128,7 @@ export default class Chart extends React.Component<{}, IState> {
           </Grid>
         </AppBar>
         <Container maxWidth={false}>
-          <StatsDataChart chartData={this.state.stockApiData}  filterKey={this.state.filterKey} />
+          <StatsDataChart chartData={this.state.stockApiData} filterKey={this.state.filterKey} />
         </Container>
       </React.Fragment>
     );
