@@ -90,7 +90,7 @@ const StatsDataChart = ({
   return (
     <React.Fragment>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "30px"}}>
-       Kills/Deathes
+       Kills/Deathes ({filterKey})
       </Typography>
       <div style={{width: "100%", height: "200px"}}>
         <ResponsiveContainer>
@@ -102,7 +102,7 @@ const StatsDataChart = ({
         </ResponsiveContainer>
       </div>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "20px"}}>
-      Average Damages
+      Average Damages ({filterKey})
       </Typography>
       <div style={{width: "100%", height: "270px"}}>
         <ResponsiveContainer>
