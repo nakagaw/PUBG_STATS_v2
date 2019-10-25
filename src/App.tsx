@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 // API Classes
-import { PubgAPI } from './api/PubgAPI';
+import { PubgAPI } from './classes/PubgAPI';
 
 // Components
 import Loading from './components/Loading';
@@ -47,13 +47,14 @@ interface IState {
   userID: string;
   apiData: any;
   apiDataError: string;
-  loading: boolean;
+  getApiDataLoading: boolean;
   playingState: boolean;
   playingDate: string;
   stockApiData: any;
   filterMenuState: any;
   filterGameMode?: any;
   filterSeason?: any;
+  createTableLoading: boolean;
 }
 
 export default class App extends React.Component<{}, IState> {
@@ -66,13 +67,14 @@ export default class App extends React.Component<{}, IState> {
       userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
       apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
       apiDataError: "No data",
-      loading: false,
+      getApiDataLoading: false,
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       stockApiData: [],
       filterMenuState: null,
       filterGameMode: "all",
       filterSeason: localStorage.getItem('_pubgFilterSeason') ? localStorage.getItem('_pubgFilterSeason')! : "current-season",
+      createTableLoading: false,
     }
   }
 
@@ -89,7 +91,7 @@ export default class App extends React.Component<{}, IState> {
 
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   public getDBdatas = (event: any) => {
-    this.setState({loading: true});
+    this.setState({getApiDataLoading: true});
     firebaseDB.ref('/users/').once('value')
     .then( snapshot => {
       console.log("Get data from FirebaseDB! : " + this.state.userID);
@@ -111,25 +113,25 @@ export default class App extends React.Component<{}, IState> {
       } else {
         console.log('▲ Error => Not found user on firebaseDB...');
       }
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     })
     .catch( error => {
       console.log(error);
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     });
   }
 
   // userID でテーブル作成して firebaseDB に書き込み
   public valueUpdate = (event: any) => {
-    this.setState({loading: true});
+    this.setState({getApiDataLoading: true});
     firebaseDB.ref('users/' + this.state.userID).set(this.state.stockApiData)
     .then( () => {
       console.log("FirebaseDB update ok! : " + this.state.userID);
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     })
     .catch( error => {
       console.log(error);
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     });
     event.preventDefault();
   }
@@ -160,7 +162,7 @@ export default class App extends React.Component<{}, IState> {
 
   // とりあえず50件のデータとって _pubgApiData に保存するやつ
   public getMatches = async (id: string, date?: Date) => {
-    this.setState({loading: true});
+    this.setState({getApiDataLoading: true});
     const pubgApi = new PubgAPI();
     pubgApi.getMatches(id, date)
     .then( value => {
@@ -168,11 +170,11 @@ export default class App extends React.Component<{}, IState> {
       const pubgApiData = JSON.stringify(value,undefined,1);
       // console.log(pubgApiData);
       localStorage.setItem('_pubgApiData', pubgApiData);
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     }, reason => {
       this.setState({apiDataError: "Should Play!"});
       console.log("Error => " + reason);
-      this.setState({loading: false});
+      this.setState({getApiDataLoading: false});
     } );
   }
 
@@ -230,6 +232,7 @@ export default class App extends React.Component<{}, IState> {
   
   // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
   public createStatsTable = (event?: any) => {
+    this.setState({createTableLoading: true});
     let statsTableKeyData: any = [];
     let statsTableData: any = {};
     for (let i = 0; i < localStorage.length; i++) {
@@ -242,7 +245,6 @@ export default class App extends React.Component<{}, IState> {
         );
       }
     }
-
     // シーズンフィルタ
     const seasonDate: any = {
       "current-season" : ["2019/10/22","2020/01/30"],
@@ -259,13 +261,13 @@ export default class App extends React.Component<{}, IState> {
         statsTableData[statsTableKeyData[i]] = _statsTableData;
       }
     }
-
     if(statsTableData !== null){
       this.setState({stockApiData: statsTableData});
     }
-
     // console.log(statsTableKeyData);
     // console.log(statsTableData);
+    
+    this.setState({createTableLoading: false});
   }
 
   // Play中のデータとローカルストレージ消す
@@ -309,7 +311,7 @@ export default class App extends React.Component<{}, IState> {
     }
     return (
       <React.Fragment>
-        <Loading state={this.state.loading} />
+        <div style={{ height: '2px' }}><Loading state={this.state.getApiDataLoading} type="linear" /></div>
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
@@ -367,7 +369,7 @@ export default class App extends React.Component<{}, IState> {
               </Grid>
             </Grid>
             <Grid item style={{ flexGrow: 1}}>
-              {this.state.loading && <div style={{ textAlign: 'right', fontSize: '12px'}}>ლ(╹◡╹ლ)</div>}
+              {this.state.getApiDataLoading && <div style={{ textAlign: 'right', fontSize: '12px'}}>ლ(╹◡╹ლ)</div>}
             </Grid>
             <Grid item>
               <IconButton aria-label="Get DB data" onClick={this.getDBdatas} disabled={this.state.playingState}>
@@ -425,7 +427,7 @@ export default class App extends React.Component<{}, IState> {
         <Container maxWidth={false}>
           <Grid container spacing={4} wrap="nowrap">
             <Grid item style={{ padding: '0'}}>
-              <Paper>
+              <Paper style={{ backgroundColor: "#292929"}}>
                 {this.state.apiData.length !== 0 ? (
                   <StatsDataTable tableData={this.state.apiData} filterGameMode={this.state.filterGameMode} />
                 ) : (
@@ -448,7 +450,7 @@ export default class App extends React.Component<{}, IState> {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item style={{overflowY: 'auto', padding: '0'}}>
+            <Grid item style={{overflowY: 'auto', padding: 0, flexGrow: 1}}>
               <Grid container wrap="nowrap">
                 {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
                   <Grid item key={i} style={{marginRight: '1px'}}>
@@ -456,6 +458,7 @@ export default class App extends React.Component<{}, IState> {
                   </Grid>
                 ))}
               </Grid>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', position: 'fixed', top: 0, left: 0 }}><Loading state={this.state.createTableLoading} type="circular" /></div>
             </Grid>
           </Grid>
         </Container>
