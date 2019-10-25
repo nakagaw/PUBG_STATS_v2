@@ -124,9 +124,9 @@ export default class App extends React.Component<{}, IState> {
   // userID でテーブル作成して firebaseDB に書き込み
   public valueUpdate = (event: any) => {
     this.setState({getApiDataLoading: true});
-    firebaseDB.ref('users/' + this.state.userID).set(this.state.stockApiData)
+    firebaseDB.ref('users/' + this.state.userID).set(this.createAllStatsData())
     .then( () => {
-      console.log("FirebaseDB update ok! : " + this.state.userID);
+      console.log("FirebaseDB updatef from localStrage all data! : " + this.state.userID);
       this.setState({getApiDataLoading: false});
     })
     .catch( error => {
@@ -150,7 +150,7 @@ export default class App extends React.Component<{}, IState> {
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
   public changefilterDateFormat = (date: string) => {
     const formatDate = new Date(date).toLocaleString('ja-JP').replace(/\//g,'-').split(/\./)[0];
-    console.log(formatDate );
+    // console.log(formatDate );
     const formatDate1 = formatDate.split(/\s/)[0];
     let formatDate2 = formatDate.split(/\s/)[1];
     const zeroFormat = formatDate2.split(":");
@@ -230,43 +230,59 @@ export default class App extends React.Component<{}, IState> {
     }
   }
   
-  // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
-  public createStatsTable = (event?: any) => {
-    this.setState({createTableLoading: true});
-    let statsTableKeyData: any = [];
-    let statsTableData: any = {};
+  // ストックした "_pubgStatsData__*" キーを集めてて新しい順にするやつ
+  public summarizeStatsDataKeys = () => {
+    let statsTableKeys: any = [];
     for (let i = 0; i < localStorage.length; i++) {
       if ( localStorage.key(i)!.match(/_pubgStatsData__/) ) {
-        statsTableKeyData.push(localStorage.key(i));
-        statsTableKeyData.sort( // 最新順に
+        statsTableKeys.push(localStorage.key(i));
+        statsTableKeys.sort( // 最新順に
           function(a: any,b: any){
             return (a < b ? 1 : -1);
           }
         );
       }
     }
+    return statsTableKeys;
+  }
+
+  // ローカルストレージの全 "_pubgStatsData__*" データの配列作成
+  public createAllStatsData = () => {
+    const statsTableKeys =  this.summarizeStatsDataKeys();
+    let statsTableData: any = {};
+    for (let i = 0; i < statsTableKeys.length; i++) {
+      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
+      statsTableData[statsTableKeys[i]] = _statsTableData;
+    }
+    return statsTableData;
+  }
+
+  // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
+  public createStatsTable = (event?: any) => {
+    this.setState({createTableLoading: true});
+    const statsTableKeys =  this.summarizeStatsDataKeys();
+    let statsTableData: any = {};
     // シーズンフィルタ
     const seasonDate: any = {
       "current-season" : ["2019/10/22","2020/01/30"],
       "season-4" : ["2019/07/24","2019/10/22"]
     }
-    for (let i = 0; i < statsTableKeyData.length; i++) {
-      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeyData[i])!);
+    for (let i = 0; i < statsTableKeys.length; i++) {
+      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
       const _filterSeason = this.state.filterSeason;
       const seasonStart = new Date(seasonDate[_filterSeason][0]);
       const seasonEnd = new Date(seasonDate[_filterSeason][1]);
       const playedDate = new Date(_statsTableData.playedDate);
       if ( seasonStart < playedDate && seasonEnd >= playedDate) {
-        // season 内データだけ配列追加
-        statsTableData[statsTableKeyData[i]] = _statsTableData;
+        // シーズン内に該当するデータだけを配列追加
+        statsTableData[statsTableKeys[i]] = _statsTableData;
       }
     }
     if(statsTableData !== null){
       this.setState({stockApiData: statsTableData});
     }
-    // console.log(statsTableKeyData);
+    // console.log(statsTableKeys);
     // console.log(statsTableData);
-    
     this.setState({createTableLoading: false});
   }
 
@@ -311,7 +327,7 @@ export default class App extends React.Component<{}, IState> {
     }
     return (
       <React.Fragment>
-        <div style={{ height: '2px' }}><Loading state={this.state.getApiDataLoading} type="linear" /></div>
+        <Loading state={this.state.getApiDataLoading} type="linear" />
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
@@ -368,9 +384,7 @@ export default class App extends React.Component<{}, IState> {
                 <Grid item>Playing Now!</Grid>
               </Grid>
             </Grid>
-            <Grid item style={{ flexGrow: 1}}>
-              {this.state.getApiDataLoading && <div style={{ textAlign: 'right', fontSize: '12px'}}>ლ(╹◡╹ლ)</div>}
-            </Grid>
+            <Grid item style={{ flexGrow: 1}}></Grid>
             <Grid item>
               <IconButton aria-label="Get DB data" onClick={this.getDBdatas} disabled={this.state.playingState}>
                 <CloudDownload />
@@ -458,7 +472,7 @@ export default class App extends React.Component<{}, IState> {
                   </Grid>
                 ))}
               </Grid>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', position: 'fixed', top: 0, left: 0 }}><Loading state={this.state.createTableLoading} type="circular" /></div>
+              <Loading state={this.state.createTableLoading} type="circular" />
             </Grid>
           </Grid>
         </Container>

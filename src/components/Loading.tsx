@@ -21,14 +21,18 @@ const Loading = ({
   switch (type) {
     case "linear":
       return (
-        <React.Fragment>
+        <div style={{ height: '2px' }}>
           {state && <StyledLinearProgress color="secondary" />}
-        </React.Fragment>
+        </div>
       )
     case "circular":
       return (
         <React.Fragment>
-          {state && <CircularProgress size={120} thickness={1} />}
+        {state &&
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
+            <CircularProgress size={120} thickness={1} />
+          </div>
+        }
         </React.Fragment>
       )
   }
