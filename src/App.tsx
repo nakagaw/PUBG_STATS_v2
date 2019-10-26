@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-// API Classes
+// Classes
 import { PubgAPI } from './classes/PubgAPI';
 
 // Components
@@ -30,13 +30,8 @@ import {
 } from '@material-ui/core';
 
 import {
-  CloudUpload,
-  CloudDownload,
   FilterList,
 } from '@material-ui/icons';
-
-// firebase
-import { firebaseDB } from './firebaseConfig'
 
 // ============================================
 // ============================================
@@ -89,62 +84,14 @@ export default class App extends React.Component<{}, IState> {
     this.createStatsTable();
   }
 
-  // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
-  public getDBdatas = (event: any) => {
-    this.setState({getApiDataLoading: true});
-    firebaseDB.ref('/users/').once('value')
-    .then( snapshot => {
-      console.log("Get data from FirebaseDB! : " + this.state.userID);
-      const dbData = snapshot.val();
-      // userID をローカルストレージに保存
-      if(dbData[this.state.userID] !== undefined ) {
-        // スタッツデータ をローカルストレージに保存
-        let dbStatsDataKey: any = Object.keys(dbData[this.state.userID]);
-        let dbStatsDataValue: any = Object.values(dbData[this.state.userID]);
-        for (let i in dbStatsDataKey) {
-          // console.log(dbStatsDataKey[i]);
-          // console.log(dbStatsDataValue[i]);
-          let dbStatsDataValueJSON = JSON.stringify(dbStatsDataValue[i],undefined,1);
-          // console.log(dbStatsDataValueJSON);
-          localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
-        }
-        console.log('★ All localStorage data overwritten from firebaseDB!');
-        this.createStatsTable(); //データ再描画
-      } else {
-        console.log('▲ Error => Not found user on firebaseDB...');
-      }
-      this.setState({getApiDataLoading: false});
-    })
-    .catch( error => {
-      console.log(error);
-      this.setState({getApiDataLoading: false});
-    });
-  }
-
-  // userID でテーブル作成して firebaseDB に書き込み
-  public valueUpdate = (event: any) => {
-    this.setState({getApiDataLoading: true});
-    firebaseDB.ref('users/' + this.state.userID).set(this.createAllStatsData())
-    .then( () => {
-      console.log("FirebaseDB updatef from localStrage all data! : " + this.state.userID);
-      this.setState({getApiDataLoading: false});
-    })
-    .catch( error => {
-      console.log(error);
-      this.setState({getApiDataLoading: false});
-    });
-    event.preventDefault();
-  }
-
   // userID の入力フォーム
   public changeUserID = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({userID: (event.target as HTMLInputElement).value});
   }
 
-  // filtereDate の入力フォーム
-  public changefiltereDate = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // filterDate の入力フォーム
+  public changefilterDate = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({playingDate: (event.target as HTMLInputElement).value});
-    // localStorage.setItem('_pubgPlayingStartTime', new Date((event.target as HTMLInputElement).value).toString());
   }
 
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
@@ -331,7 +278,7 @@ export default class App extends React.Component<{}, IState> {
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
-              <Navbar />
+              <Navbar userID={this.state.userID} allStatsData={this.createAllStatsData()} />
               <Typography variant="h6" component="h1" noWrap>
                 TODAY's STATS
               </Typography>
@@ -358,7 +305,7 @@ export default class App extends React.Component<{}, IState> {
                   id="filterDate"
                   label="Filter date"
                   value={this.state.playingDate}
-                  onChange={this.changefiltereDate}
+                  onChange={this.changefilterDate}
                   disabled={this.state.playingState}
                   placeholder="Placeholder"
                   margin="dense"
@@ -386,12 +333,6 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
             <Grid item style={{ flexGrow: 1}}></Grid>
             <Grid item>
-              <IconButton aria-label="Get DB data" onClick={this.getDBdatas} disabled={this.state.playingState}>
-                <CloudDownload />
-              </IconButton>
-              <IconButton aria-label="Save DB data" onClick={this.valueUpdate} disabled={this.state.playingState}>
-                <CloudUpload />
-              </IconButton>
               <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick} disabled={this.state.playingState}>
                 <FilterList />
               </IconButton>

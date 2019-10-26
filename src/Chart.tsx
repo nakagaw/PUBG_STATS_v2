@@ -23,6 +23,7 @@ import {
 } from '@material-ui/icons';
 
 interface IState {
+  userID: string;
   stockApiData: any;
   filterMenuState: any;
   filterGameMode?: any;
@@ -33,6 +34,7 @@ export default class Chart extends React.Component<{}, IState> {
   constructor(props: {}) {
     super(props);
     this.state = {
+      userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
       stockApiData: [],
       filterMenuState: null,
       filterGameMode: "all",
@@ -44,28 +46,45 @@ export default class Chart extends React.Component<{}, IState> {
     this.createStatsTable();
   }
 
-  // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
-  public createStatsTable = () => {
-    let statsTableKeyData: any = [];
-    let statsTableData: any = {};
+  // ストックした "_pubgStatsData__*" キーを集めてて新しい順にするやつ
+  public summarizeStatsDataKeys = () => {
+    let statsTableKeys: any = [];
     for (let i = 0; i < localStorage.length; i++) {
       if ( localStorage.key(i)!.match(/_pubgStatsData__/) ) {
-        statsTableKeyData.push(localStorage.key(i));
-        statsTableKeyData.sort( // 最新順に
+        statsTableKeys.push(localStorage.key(i));
+        statsTableKeys.sort( // 最新順に
           function(a: any,b: any){
             return (a < b ? 1 : -1);
           }
         );
       }
     }
-    for (let i = 0; i < statsTableKeyData.length; i++) {
-        statsTableData[statsTableKeyData[i]] = JSON.parse(localStorage.getItem(statsTableKeyData[i])!);
+    return statsTableKeys;
+  }
+
+  // ローカルストレージの全 "_pubgStatsData__*" データの配列作成
+  public createAllStatsData = () => {
+    const statsTableKeys =  this.summarizeStatsDataKeys();
+    let statsTableData: any = {};
+    for (let i = 0; i < statsTableKeys.length; i++) {
+      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
+      statsTableData[statsTableKeys[i]] = _statsTableData;
+    }
+    return statsTableData;
+  }
+
+  // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
+  // ここは Chartようにシーズンフィルターなしに変更してる
+  public createStatsTable = () => {
+    const statsTableKeys =  this.summarizeStatsDataKeys();
+    let statsTableData: any = {};
+    for (let i = 0; i < statsTableKeys.length; i++) {
+      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
+      statsTableData[statsTableKeys[i]] = _statsTableData;
     }
     if(statsTableData !== null){
       this.setState({stockApiData: statsTableData});
     }
-    // console.log(statsTableKeyData);
-    // console.log(statsTableData);
   }
 
   // フィルターボタン
@@ -75,7 +94,7 @@ export default class Chart extends React.Component<{}, IState> {
   public filterMenuClose = (event?: any) => {
     this.setState({filterMenuState: null});
   }
-  public filterGameModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log((event.target as HTMLInputElement).value);
     this.setState({filterGameMode: (event.target as HTMLInputElement).value});
     this.createStatsTable(); //データ再描画
@@ -88,7 +107,7 @@ export default class Chart extends React.Component<{}, IState> {
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
-              <Navbar />
+              <Navbar userID={this.state.userID} allStatsData={this.createAllStatsData()} />
               <Typography variant="h6" component="h1" noWrap>
               Chart
               </Typography>
@@ -105,7 +124,7 @@ export default class Chart extends React.Component<{}, IState> {
                 open={Boolean(this.state.filterMenuState)}
                 onClose={this.filterMenuClose}
               >
-                <RadioGroup aria-label="gender" name="filter" value={this.state.filterGameMode} onChange={this.filterGameModeChange} 
+                <RadioGroup aria-label="gender" name="filter" value={this.state.filterGameMode} onChange={this.filterKeyChange} 
                 style={{padding: "10px 15px"}}>
                   <FormControlLabel
                     value="all"

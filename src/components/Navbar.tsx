@@ -2,6 +2,7 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import styled from 'styled-components';
+import { Firebase } from '../classes/Firebase';
 
 // Material UI
 import { 
@@ -14,10 +15,20 @@ import {
   Drawer,
   Divider,
   IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@material-ui/core';
 
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import {
+  Home,
+  Timeline,
+  CloudUpload,
+  CloudDownload,
+  Menu,
+  ChevronLeft,
+} from '@material-ui/icons';
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme: Theme) =>
@@ -80,29 +91,51 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const StyledNavLink= styled(NavLink)`
-  color: white;
-  padding: 10px 16px;
-  text-decoration: none;
-  &:hover, &:focus {
-    background-color: #5a5a5a;
-  }
-  &.active {
+  &[aria-current="page"] {
     color: #88cdff;
     pointer-events: none;
+    svg {
+      fill: #88cdff;
+    }
   }
 `;
 
-const Navbar = () => {
-  const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
+interface IProps {
+  userID?: string;
+  allStatsData?: any;
+  // getApiDataLoading: boolean;
+}
 
+const Navbar = ({
+  userID,
+  allStatsData,
+  // getApiDataLoading,
+}: IProps) => {
+  const classes = useStyles();
+
+  const [open, setOpen] = React.useState(false);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
-
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
+  const getDBdatas = (event: any) => {
+    // this.setState({getApiDataLoading: true});
+    const firebase = new Firebase();
+    firebase.getData(userID!);
+    // this.setState({getApiDataLoading: false});
+  }
+
+  // userID でテーブル作成して firebaseDB に書き込み
+  const setDBdatas = (event: any) => {
+    // this.setState({getApiDataLoading: true});
+    const firebase = new Firebase();
+    firebase.setData(userID!, allStatsData!);
+    // this.setState({getApiDataLoading: false});
+  }
 
   return(
     <React.Fragment>
@@ -113,7 +146,7 @@ const Navbar = () => {
         edge="start"
         className={clsx(classes.menuButton, open && classes.hide)}
       >
-        <MenuIcon />
+        <Menu />
       </IconButton>
       <Drawer
         className={classes.drawer}
@@ -126,12 +159,31 @@ const Navbar = () => {
       >
         <div className={classes.drawerHeader}>
           <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
+            <ChevronLeft />
           </IconButton>
         </div>
         <Divider />
-        <StyledNavLink exact to="/">HOME</StyledNavLink>
-        <StyledNavLink exact to="/Chart">Chart</StyledNavLink>
+        <List>
+          <ListItem button component={StyledNavLink} exact to="/">
+            <ListItemIcon><Home /></ListItemIcon>
+            <ListItemText primary="Home"/>
+          </ListItem>
+          <ListItem button component={StyledNavLink} exact to="/Chart">
+            <ListItemIcon><Timeline /></ListItemIcon>
+            <ListItemText primary="Chart"/>
+          </ListItem>
+        </List>
+        <Divider />
+        <List disablePadding>
+          <ListItem button onClick={setDBdatas}>
+            <ListItemIcon><CloudUpload /></ListItemIcon>
+            <ListItemText primary="Backup Data"/>
+          </ListItem>
+          <ListItem button onClick={getDBdatas}>
+            <ListItemIcon><CloudDownload /></ListItemIcon>
+            <ListItemText primary="Get DB Data"/>
+          </ListItem>
+        </List>
       </Drawer>
     </React.Fragment>
   )
