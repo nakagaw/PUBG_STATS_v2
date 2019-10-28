@@ -1,5 +1,8 @@
 import * as React from 'react';
 
+// Classes
+import { LocalStorageControls } from './classes/LocalStorageControls';
+
 // Components
 import Navbar from './components/Navbar';
 import StatsDataChart from './components/StatsDataChart';
@@ -46,37 +49,10 @@ export default class Chart extends React.Component<{}, IState> {
     this.createStatsTable();
   }
 
-  // ストックした "_pubgStatsData__*" キーを集めてて新しい順にするやつ
-  public summarizeStatsDataKeys = () => {
-    let statsTableKeys: any = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      if ( localStorage.key(i)!.match(/_pubgStatsData__/) ) {
-        statsTableKeys.push(localStorage.key(i));
-        statsTableKeys.sort( // 最新順に
-          function(a: any,b: any){
-            return (a < b ? 1 : -1);
-          }
-        );
-      }
-    }
-    return statsTableKeys;
-  }
-
-  // ローカルストレージの全 "_pubgStatsData__*" データの配列作成
-  public createAllStatsData = () => {
-    const statsTableKeys =  this.summarizeStatsDataKeys();
-    let statsTableData: any = {};
-    for (let i = 0; i < statsTableKeys.length; i++) {
-      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
-      statsTableData[statsTableKeys[i]] = _statsTableData;
-    }
-    return statsTableData;
-  }
-
   // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
   // ここは Chartようにシーズンフィルターなしに変更してる
   public createStatsTable = () => {
-    const statsTableKeys =  this.summarizeStatsDataKeys();
+    const statsTableKeys: any =  new LocalStorageControls().summarizeStatsDataKeys();
     let statsTableData: any = {};
     for (let i = 0; i < statsTableKeys.length; i++) {
       let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
@@ -107,7 +83,7 @@ export default class Chart extends React.Component<{}, IState> {
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
-              <Navbar userID={this.state.userID} allStatsData={this.createAllStatsData()} />
+              <Navbar userID={this.state.userID} />
               <Typography variant="h6" component="h1" noWrap>
               Chart
               </Typography>

@@ -2,7 +2,10 @@ import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import styled from 'styled-components';
+
+// Classes
 import { Firebase } from '../classes/Firebase';
+import { LocalStorageControls } from '../classes/LocalStorageControls';
 
 // Material UI
 import { 
@@ -102,13 +105,11 @@ const StyledNavLink= styled(NavLink)`
 
 interface IProps {
   userID?: string;
-  allStatsData?: any;
   // getApiDataLoading: boolean;
 }
 
 const Navbar = ({
   userID,
-  allStatsData,
   // getApiDataLoading,
 }: IProps) => {
   const classes = useStyles();
@@ -132,8 +133,9 @@ const Navbar = ({
   // userID でテーブル作成して firebaseDB に書き込み
   const setDBdatas = (event: any) => {
     // this.setState({getApiDataLoading: true});
+    const allStatsData = new LocalStorageControls().createAllStatsData();
     const firebase = new Firebase();
-    firebase.setData(userID!, allStatsData!);
+    firebase.setData(userID!, allStatsData);
     // this.setState({getApiDataLoading: false});
   }
 
