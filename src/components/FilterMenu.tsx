@@ -15,7 +15,6 @@ import {
 } from '@material-ui/icons';
 
 interface IProps {
-  userID?: string;
   initGameModeValue: string;
   initSeasonValue: string;
   filterGameModeValue: (value: string) => void;
@@ -23,7 +22,6 @@ interface IProps {
 }
 
 const FilterMenu = ({
-  userID,
   initGameModeValue,
   initSeasonValue,
   filterGameModeValue,

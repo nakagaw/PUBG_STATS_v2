@@ -2,7 +2,7 @@ import * as React from 'react';
 
 // Classes
 import { PubgAPI } from './classes/PubgAPI';
-import { LocalStorageControls } from './classes/LocalStorageControls';
+import { StatsData } from './classes/StatsData';
 
 // Components
 import Loading from './components/Loading';
@@ -17,23 +17,12 @@ import {
   Container,
   Typography,
   FormControl,
-  // FormControlLabel,
   TextField,
-  // IconButton,
   Button,
   Switch,
   Paper,
   Grid,
-  // Menu,
-  // MenuItem,
-  // Radio,
-  // RadioGroup,
-  // Divider,
 } from '@material-ui/core';
-
-// import {
-//   FilterList,
-// } from '@material-ui/icons';
 
 // ============================================
 // ============================================
@@ -178,35 +167,6 @@ export default class App extends React.Component<{}, IState> {
       this.diffLocalDataCheckSave();
     }
   }
-  
-  // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
-  public createStatsTable = (event?: any) => {
-    this.setState({createTableLoading: true});
-    const statsTableKeys: any =  new LocalStorageControls().summarizeStatsDataKeys();
-    let statsTableData: any = {};
-    // シーズンフィルタ
-    const seasonDate: any = {
-      "current-season" : ["2019/10/22","2020/01/30"],
-      "season-4" : ["2019/07/24","2019/10/22"]
-    }
-    for (let i = 0; i < statsTableKeys.length; i++) {
-      let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
-      const _filterSeason = this.state.filterSeason;
-      const seasonStart = new Date(seasonDate[_filterSeason][0]);
-      const seasonEnd = new Date(seasonDate[_filterSeason][1]);
-      const playedDate = new Date(_statsTableData.playedDate);
-      if ( seasonStart < playedDate && seasonEnd >= playedDate) {
-        // シーズン内に該当するデータだけを配列追加
-        statsTableData[statsTableKeys[i]] = _statsTableData;
-      }
-    }
-    if(statsTableData !== null){
-      this.setState({stockApiData: statsTableData});
-    }
-    // console.log(statsTableKeys);
-    // console.log(statsTableData);
-    this.setState({createTableLoading: false});
-  }
 
   // Play中のデータとローカルストレージ消す
   public clearPlayingData = () => {
@@ -219,6 +179,15 @@ export default class App extends React.Component<{}, IState> {
     this.diffLocalDataCheckSave(); //描画中の過去データ保存してからの↓
     this.createStatsTable(); //データ再描画
     this.clearPlayingData();
+  }
+
+  // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
+  public createStatsTable = (event?: any) => {
+    this.setState({createTableLoading: true});
+    const statsTableData =  new  StatsData().create(this.state.filterSeason);
+    this.setState({stockApiData: statsTableData});
+    console.log(statsTableData);
+    this.setState({createTableLoading: false});
   }
 
   // フィルターのステート管理
