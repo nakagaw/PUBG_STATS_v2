@@ -6,6 +6,7 @@ import { LocalStorageControls } from './classes/LocalStorageControls';
 
 // Components
 import Loading from './components/Loading';
+import FilterMenu from './components/FilterMenu';
 import Navbar from './components/Navbar';
 import StatsDataTable from './components/StatsDataTable';
 
@@ -16,23 +17,23 @@ import {
   Container,
   Typography,
   FormControl,
-  FormControlLabel,
+  // FormControlLabel,
   TextField,
-  IconButton,
+  // IconButton,
   Button,
   Switch,
   Paper,
   Grid,
-  Menu,
+  // Menu,
   // MenuItem,
-  Radio,
-  RadioGroup,
-  Divider,
+  // Radio,
+  // RadioGroup,
+  // Divider,
 } from '@material-ui/core';
 
-import {
-  FilterList,
-} from '@material-ui/icons';
+// import {
+//   FilterList,
+// } from '@material-ui/icons';
 
 // ============================================
 // ============================================
@@ -68,7 +69,7 @@ export default class App extends React.Component<{}, IState> {
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       stockApiData: [],
       filterMenuState: null,
-      filterGameMode: "all",
+      filterGameMode: localStorage.getItem('_pubgGameMode') ? localStorage.getItem('_pubgGameMode')! : "all",
       filterSeason: localStorage.getItem('_pubgFilterSeason') ? localStorage.getItem('_pubgFilterSeason')! : "current-season",
       createTableLoading: false,
     }
@@ -220,24 +221,17 @@ export default class App extends React.Component<{}, IState> {
     this.clearPlayingData();
   }
 
-  // フィルターボタン
-  public filterMenuClick = (event: React.MouseEvent<HTMLDataElement>) => {
-    this.setState({filterMenuState: event.currentTarget});
-  }
-  public filterMenuClose = (event?: any) => {
-    this.setState({filterMenuState: null});
-  }
-  public filterGameModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({filterGameMode: (event.target as HTMLInputElement).value});
+  // フィルターのステート管理
+  public filterGameModeChange = (value: string) => {
+    this.setState({filterGameMode: value});
+    localStorage.setItem('_pubgGameMode', value);
     this.createStatsTable(); //データ再描画
-    this.filterMenuClose();
   }
-  public filterSeasonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({filterSeason: (event.target as HTMLInputElement).value});
-    localStorage.setItem('_pubgFilterSeason', (event.target as HTMLInputElement).value);
+  public filterSeasonChange = (value: string) => {
+    this.setState({filterSeason: value});
+    localStorage.setItem('_pubgFilterSeason', value);
     setTimeout(() => { // アニメーションのせい？か、これがないと setState できてない。promise 化したほうが良さそう
       this.createStatsTable(); //データ再描画
-      this.filterMenuClose();
     }, 10)
   }
 
@@ -307,49 +301,12 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
             <Grid item style={{ flexGrow: 1}}></Grid>
             <Grid item>
-              <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick} disabled={this.state.playingState}>
-                <FilterList />
-              </IconButton>
-              <Menu
-                id="simple-menu"
-                anchorEl={this.state.filterMenuState}
-                keepMounted
-                open={Boolean(this.state.filterMenuState)}
-                onClose={this.filterMenuClose}
-              >
-                <RadioGroup aria-label="Game mode filter" name="filterGameModeGroup" value={this.state.filterGameMode} onChange={this.filterGameModeChange} 
-                style={{padding: "10px 15px"}}>
-                  <FormControlLabel
-                    value="all"
-                    control={<Radio />}
-                    label="All"
-                  />
-                  <FormControlLabel
-                    value="solo-fpp"
-                    control={<Radio />}
-                    label="Solo FPP"
-                  />
-                  <FormControlLabel
-                    value="squad-fpp"
-                    control={<Radio />}
-                    label="Squad FPP"
-                  />
-                </RadioGroup>
-                <Divider variant="middle" />
-                <RadioGroup aria-label="Season filter" name="filterSeasonGroup" value={this.state.filterSeason} onChange={this.filterSeasonChange}
-                style={{padding: "10px 15px"}}>
-                  <FormControlLabel
-                    value="current-season"
-                    control={<Radio />}
-                    label="Season 5"
-                  />
-                  <FormControlLabel
-                    value="season-4"
-                    control={<Radio />}
-                    label="Season 4"
-                  />
-                </RadioGroup>
-              </Menu>
+              <FilterMenu 
+                initGameModeValue={this.state.filterGameMode}
+                initSeasonValue={this.state.filterSeason}
+                filterGameModeValue={this.filterGameModeChange}
+                filterSeasonValue={this.filterSeasonChange}
+              />
             </Grid>
           </Grid>
         </AppBar>

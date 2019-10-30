@@ -5,6 +5,7 @@ import { LocalStorageControls } from './classes/LocalStorageControls';
 
 // Components
 import Navbar from './components/Navbar';
+import FilterMenu from './components/FilterMenu';
 import StatsDataChart from './components/StatsDataChart';
 
 // Material UI
@@ -13,23 +14,15 @@ import {
   Toolbar,
   Container,
   Typography,
-  FormControlLabel,
-  IconButton,
   Grid,
-  Menu,
-  Radio,
-  RadioGroup,
 } from '@material-ui/core';
-
-import {
-  FilterList,
-} from '@material-ui/icons';
 
 interface IState {
   userID: string;
   stockApiData: any;
   filterMenuState: any;
   filterGameMode?: any;
+  filterSeason?: any;
 }
 
 export default class Chart extends React.Component<{}, IState> {
@@ -40,7 +33,9 @@ export default class Chart extends React.Component<{}, IState> {
       userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
       stockApiData: [],
       filterMenuState: null,
-      filterGameMode: "all",
+      filterGameMode: localStorage.getItem('_pubgGameMode') ? localStorage.getItem('_pubgGameMode')! : "all",
+      filterSeason: localStorage.getItem('_pubgFilterSeason') ? localStorage.getItem('_pubgFilterSeason')! : "current-season",
+      
     }
   }
 
@@ -54,28 +49,54 @@ export default class Chart extends React.Component<{}, IState> {
   public createStatsTable = () => {
     const statsTableKeys: any =  new LocalStorageControls().summarizeStatsDataKeys();
     let statsTableData: any = {};
+    // シーズンフィルタ
+    const seasonDate: any = {
+      "current-season" : ["2019/10/22","2020/01/30"],
+      "season-4" : ["2019/07/24","2019/10/22"]
+    }
     for (let i = 0; i < statsTableKeys.length; i++) {
       let _statsTableData = JSON.parse(localStorage.getItem(statsTableKeys[i])!);
-      statsTableData[statsTableKeys[i]] = _statsTableData;
+      const _filterSeason = this.state.filterSeason;
+      const seasonStart = new Date(seasonDate[_filterSeason][0]);
+      const seasonEnd = new Date(seasonDate[_filterSeason][1]);
+      const playedDate = new Date(_statsTableData.playedDate);
+      if ( seasonStart < playedDate && seasonEnd >= playedDate) {
+        // シーズン内に該当するデータだけを配列追加
+        statsTableData[statsTableKeys[i]] = _statsTableData;
+      }
     }
     if(statsTableData !== null){
       this.setState({stockApiData: statsTableData});
     }
   }
 
-  // フィルターボタン
-  public filterMenuClick = (event: React.MouseEvent<HTMLDataElement>) => {
-    this.setState({filterMenuState: event.currentTarget});
-  }
-  public filterMenuClose = (event?: any) => {
-    this.setState({filterMenuState: null});
-  }
-  public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log((event.target as HTMLInputElement).value);
-    this.setState({filterGameMode: (event.target as HTMLInputElement).value});
+  // フィルターのステート管理
+  public filterGameModeChange = (value: string) => {
+    this.setState({filterGameMode: value});
+    localStorage.setItem('_pubgGameMode', value);
     this.createStatsTable(); //データ再描画
-    this.filterMenuClose();
   }
+  public filterSeasonChange = (value: string) => {
+    this.setState({filterSeason: value});
+    localStorage.setItem('_pubgFilterSeason', value);
+    setTimeout(() => { // アニメーションのせい？か、これがないと setState できてない。promise 化したほうが良さそう
+      this.createStatsTable(); //データ再描画
+    }, 10)
+  }
+
+  // // フィルターボタン
+  // public filterMenuClick = (event: React.MouseEvent<HTMLDataElement>) => {
+  //   this.setState({filterMenuState: event.currentTarget});
+  // }
+  // public filterMenuClose = (event?: any) => {
+  //   this.setState({filterMenuState: null});
+  // }
+  // public filterKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   console.log((event.target as HTMLInputElement).value);
+  //   this.setState({filterGameMode: (event.target as HTMLInputElement).value});
+  //   this.createStatsTable(); //データ再描画
+  //   this.filterMenuClose();
+  // }
 
   render() {
     return (
@@ -89,7 +110,7 @@ export default class Chart extends React.Component<{}, IState> {
               </Typography>
             </Toolbar>
             <Grid item style={{ flexGrow: 1, textAlign: 'right'}}>
-              
+{/*               
             <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={this.filterMenuClick}>
                 <FilterList />
               </IconButton>
@@ -118,7 +139,13 @@ export default class Chart extends React.Component<{}, IState> {
                     label="Squad FPP"
                   />
                 </RadioGroup>
-              </Menu>
+              </Menu> */}
+              <FilterMenu 
+                initGameModeValue={this.state.filterGameMode}
+                initSeasonValue={this.state.filterSeason}
+                filterGameModeValue={this.filterGameModeChange}
+                filterSeasonValue={this.filterSeasonChange}
+              />
             </Grid>
           </Grid>
         </AppBar>

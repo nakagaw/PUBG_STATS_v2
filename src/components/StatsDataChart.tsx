@@ -54,29 +54,33 @@ const StatsDataChart = ({
   filterGameMode,
 }: IProps) => {
 
-  console.log(Object.values(chartData));
+  // console.log(Object.values(chartData));
 
   const statsData: any = [];
   // 左から右にするために for (let i = 0; i < Object.keys(chartData).length; i++) { ではない
   for (let i = Object.keys(chartData).length - 1; i >= 0; i--) {
     let data: any = Object.values(chartData)[i];
     let statsDataObject: any = {}
-    // filter stats data
+
+    // ゲームモードのフィルター
     const filteredData = data.data.filter((item: any, index: number) => {
+      // all だったらそのまま返す
       if ( filterGameMode === "all" ) {
         return item
+      // gameMode state があれば該当するものだけ返す
       } else if ( filterGameMode === item.gameMode ) {
         return item
       }
       return null;
     })
-    // KD & totalKills
+
+    // KD & totalKills 計算
     const filteredKills = filteredData.map((row: any) => {
       return row.kills;
     });
     statsDataObject.killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
 
-    // avg damages
+    // avg damages 計算
     const filteredDamageDealt = filteredData.map((row: any) => {
       return row.damageDealt;
     });
