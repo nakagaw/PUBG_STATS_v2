@@ -74,6 +74,7 @@ const StatsDataChart = ({
       return null;
     })
 
+
     // KD & totalKills 計算
     const filteredKills = filteredData.map((row: any) => {
       return row.kills;
@@ -89,7 +90,7 @@ const StatsDataChart = ({
     statsDataObject.name = data.playedDate;
     statsData.push(statsDataObject);
   }
-  // console.log(statsData);
+  console.log(statsData);
 
   return (
     <React.Fragment>

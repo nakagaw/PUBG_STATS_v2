@@ -186,7 +186,7 @@ export default class App extends React.Component<{}, IState> {
     this.setState({createTableLoading: true});
     const statsTableData =  new  StatsData().create(this.state.filterSeason);
     this.setState({stockApiData: statsTableData});
-    console.log(statsTableData);
+    // console.log(statsTableData);
     this.setState({createTableLoading: false});
   }
 
