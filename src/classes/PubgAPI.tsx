@@ -42,26 +42,30 @@ export class PubgAPI {
 
   // Players API から match id を取り出して、Matchs API 叩いて各種データを取り出す
   // ============================================
-  public getMatches = async (id: string, playingStartTime?: Date) => {
-    let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + id);
+  public getMatches = async (userID: string, playingStartTime?: Date) => {
+    let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
     // console.log(playerDataGetResult);
     let playerMatchData = playerDataGetResult!.data.data[0].relationships.matches.data;
-    // console.log(playerMatchData);
+    // console.log(playerMatchData.length);
 
-    // 適当に40試合の matches URL 取得してリスト化
+    // マッチの数が50より足りないとエラーになるので
+    const maxLength = playerMatchData.length < 50 ? playerMatchData.length : 50;
+    // console.log(maxLength);
+
+    // 適当に50試合の matches URL 取得してリスト化
     // =====================================================
     let matchesReqestURL = [];
-    for (let x = 0; x < 50; x++) {
-      matchesReqestURL.push('/shards/steam/matches/' + playerMatchData[x].id);
+    for (let x = 0; x < maxLength; x++) {
+      let matchID = playerMatchData[x].id;
+      matchesReqestURL.push('/shards/steam/matches/' + matchID);
     }
-    // console.log(matchesReqestURL);
-
 
     // 50試合のうち、トレモ除いた試合のJSONデータにする
     // =====================================================
     let matcheList: any = [];
     for (let y = 0; y < matchesReqestURL.length; y++) {
       let matcheDataGetResult = await this.getAPI(matchesReqestURL[y]);
+      // console.log(matcheDataGetResult)
       if(matcheDataGetResult !== null){
         // ただのGETにも対応
         if(playingStartTime !== undefined){
@@ -115,7 +119,7 @@ export class PubgAPI {
        // 個人データ
       for (let z = 0; z < matchsDetaDetail.length; z++) {
         if(matchsDetaDetail[z].type === "participant") {
-          if(matchsDetaDetail[z].attributes.stats.name === id) {
+          if(matchsDetaDetail[z].attributes.stats.name === userID) {
             statsData.winPlace    = matchsDetaDetail[z].attributes.stats.winPlace;
             statsData.damageDealt = Math.round(matchsDetaDetail[z].attributes.stats.damageDealt * 10) / 10;
             statsData.kills       = matchsDetaDetail[z].attributes.stats.kills;

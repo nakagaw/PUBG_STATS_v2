@@ -88,21 +88,18 @@ export default class App extends React.Component<{}, IState> {
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
   public changefilterDateFormat = (date: string) => {
     const formatDate = new Date(date).toLocaleString('ja-JP').replace(/\//g,'-').split(/\./)[0];
-    // console.log(formatDate );
-    const formatDate1 = formatDate.split(/\s/)[0];
-    let formatDate2 = formatDate.split(/\s/)[1];
-    const zeroFormat = formatDate2.split(":");
-    zeroFormat[0] = ("0"+zeroFormat[0]).slice(-2); // 月の0埋め
-    zeroFormat[1] = ("0"+zeroFormat[1]).slice(-2); // 日の0埋め
-    formatDate2 = zeroFormat[0] + ":" + zeroFormat[1] + ":" + zeroFormat[2];
-    return formatDate1 + "T" + formatDate2;
+    var d = new Date(formatDate);
+    const shift = d.getTime()+9*60*60*1000;
+    const time = new Date(shift).toISOString().split('.')[0];
+    // console.log(time);
+    return time;
   }
 
   // とりあえず50件のデータとって _pubgApiData に保存するやつ
-  public getMatches = async (id: string, date?: Date) => {
+  public getMatches = async (userID: string, playingStartTime?: Date) => {
     this.setState({getApiDataLoading: true});
     const pubgApi = new PubgAPI();
-    pubgApi.getMatches(id, date)
+    pubgApi.getMatches(userID, playingStartTime)
     .then( value => {
       this.setState({apiData: value});
       const pubgApiData = JSON.stringify(value,undefined,1);
