@@ -87,11 +87,10 @@ export default class App extends React.Component<{}, IState> {
 
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
   public changefilterDateFormat = (date: string) => {
-    const formatDate = new Date(date).toLocaleString('ja-JP').replace(/\//g,'-').split(/\./)[0];
-    var d = new Date(formatDate);
+    var d = new Date(date);
     const shift = d.getTime()+9*60*60*1000;
     const time = new Date(shift).toISOString().split('.')[0];
-    // console.log(time);
+    // console.log(time)
     return time;
   }
 
@@ -233,7 +232,7 @@ export default class App extends React.Component<{}, IState> {
                   }}
                 />
               </FormControl>
-              <FormControl style={{ marginLeft: '7px', marginRight: '13px', width: '250px' }}>
+              <FormControl style={{ marginLeft: '7px', marginRight: '13px', width: '265px' }}>
                 <TextField
                   type="datetime-local"
                   id="filterDate"
