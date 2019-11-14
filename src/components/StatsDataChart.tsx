@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  ReferenceLine,
   // Brush
 } from 'recharts';
 
@@ -57,6 +58,8 @@ const StatsDataChart = ({
   // console.log(Object.values(chartData));
 
   const statsData: any = [];
+  let avgKD: number = 0;
+  let avgDMG: number = 0;
   // 左から右にするために for (let i = 0; i < Object.keys(chartData).length; i++) { ではない
   for (let i = Object.keys(chartData).length - 1; i >= 0; i--) {
     let data: any = Object.values(chartData)[i];
@@ -74,28 +77,33 @@ const StatsDataChart = ({
       return null;
     })
 
-
     // KD & totalKills 計算
     const filteredKills = filteredData.map((row: any) => {
       return row.kills;
     });
     statsDataObject.killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
+    avgKD += Number(statsDataObject.killDeath);
 
     // avg damages 計算
     const filteredDamageDealt = filteredData.map((row: any) => {
       return row.damageDealt;
     });
     statsDataObject.avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
+    avgDMG += Number(statsDataObject.avgDamage);
 
     statsDataObject.name = data.playedDate;
     statsData.push(statsDataObject);
   }
+  const totalAvgKD = (avgKD/Object.keys(chartData).length).toFixed(2);
+  const totalAvgDMG = (avgDMG/Object.keys(chartData).length).toFixed(1);
+  // console.log(totalAvgKD );
+  // console.log(totalAvgDMG );
   // console.log(statsData);
 
   return (
     <React.Fragment>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "30px"}}>
-       Kills/Deathes ({filterGameMode})
+       Kills/Deathes : <span style={{color: "#79ff79"}}>Avg. {totalAvgKD}</span> ({filterGameMode})
       </Typography>
       <div style={{width: "100%", height: "200px"}}>
         <ResponsiveContainer>
@@ -103,11 +111,12 @@ const StatsDataChart = ({
             <YAxis />
             <CartesianGrid stroke="#666" strokeDasharray="2 2" />
             <Line type="linear" dataKey="killDeath" stroke="#79ff79" fill="#79ff79" strokeWidth="2" dot={{ r: 4 }} label={<CustomizedLabel />} />
+            <ReferenceLine y={totalAvgKD} stroke="yellow" strokeDasharray="3 3" />
           </LineChart>
         </ResponsiveContainer>
       </div>
       <Typography variant="h6" component="h2" noWrap style={{marginTop: "20px"}}>
-      Average Damages ({filterGameMode})
+      Average Damages : <span style={{color: "#ac77dc"}}>Avg. {totalAvgDMG}</span> ({filterGameMode})
       </Typography>
       <div style={{width: "100%", height: "270px"}}>
         <ResponsiveContainer>
@@ -116,6 +125,7 @@ const StatsDataChart = ({
             <YAxis />
             <CartesianGrid stroke="#666" strokeDasharray="2 2" />
             <Line type="linear" dataKey="avgDamage" stroke="#ac77dc" fill="#ac77dc" strokeWidth="2" dot={{ r: 4 }} label={<CustomizedLabel />} />
+            <ReferenceLine y={totalAvgDMG} stroke="yellow" strokeDasharray="3 3" />
             {/* <Brush /> */}
           </LineChart>
         </ResponsiveContainer>

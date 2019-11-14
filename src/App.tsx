@@ -20,9 +20,14 @@ import {
   TextField,
   Button,
   Switch,
+  Checkbox,
+  Tooltip,
   Paper,
   Grid,
 } from '@material-ui/core';
+
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import CheckBoxIcon from '@material-ui/icons/CheckBox';
 
 // ============================================
 // ============================================
@@ -36,6 +41,7 @@ interface IState {
   getApiDataLoading: boolean;
   playingState: boolean;
   playingDate: string;
+  urumuchiState: boolean;
   stockApiData: any;
   filterMenuState: any;
   filterGameMode?: any;
@@ -56,6 +62,7 @@ export default class App extends React.Component<{}, IState> {
       getApiDataLoading: false,
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
+      urumuchiState: localStorage.getItem('_urumuchiState') === "true" ? true : false,
       stockApiData: [],
       filterMenuState: null,
       filterGameMode: localStorage.getItem('_pubgGameMode') ? localStorage.getItem('_pubgGameMode')! : "all",
@@ -88,10 +95,16 @@ export default class App extends React.Component<{}, IState> {
   // input type=date 用に "yyyy-MM-ddThh:mm" フォーマット
   public changefilterDateFormat = (date: string) => {
     var d = new Date(date);
-    const shift = d.getTime()+9*60*60*1000;
-    const time = new Date(shift).toISOString().split('.')[0];
-    // console.log(time)
-    return time;
+    const _urumuchiState = localStorage.getItem('_urumuchiState');
+    if(_urumuchiState === 'true'){ // ウルムチ設定のときは -1h
+      const shift = d.getTime()+8*60*60*1000;
+      const time = new Date(shift).toISOString().split('.')[0];
+      return time;
+    } else {
+      const shift = d.getTime()+9*60*60*1000;
+      const time = new Date(shift).toISOString().split('.')[0];
+      return time;
+    }
   }
 
   // とりあえず50件のデータとって _pubgApiData に保存するやつ
@@ -200,6 +213,13 @@ export default class App extends React.Component<{}, IState> {
     }, 10)
   }
 
+  // ウルムチ設定かどうかのやつ
+  public urumuchiStateCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const urumuchiStateChecked = event.target.checked;
+    localStorage.setItem('_urumuchiState', urumuchiStateChecked.toString());
+    this.setState({urumuchiState: event.target.checked });
+  }
+
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
@@ -232,7 +252,7 @@ export default class App extends React.Component<{}, IState> {
                   }}
                 />
               </FormControl>
-              <FormControl style={{ marginLeft: '7px', marginRight: '13px', width: '265px' }}>
+              <FormControl style={{ marginLeft: '7px', width: '315px',flexDirection: 'row' }}>
                 <TextField
                   type="datetime-local"
                   id="filterDate"
@@ -247,6 +267,17 @@ export default class App extends React.Component<{}, IState> {
                     shrink: true,
                   }}
                 />
+                <Tooltip title="ウルムチ設定">
+                  <Checkbox
+                    checked={this.state.urumuchiState}
+                    onChange={this.urumuchiStateCheck}
+                    value="checked"
+                    color="secondary"
+                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                    checkedIcon={<CheckBoxIcon fontSize="small" />}
+                    style={{ flexBasis: '50px' }}
+                  />
+                </Tooltip>
               </FormControl>
               <Button variant="contained" size="medium" color={!this.state.playingState ? 'default' : 'secondary'} style={{ marginTop: '10px' }} onClick={this.checkUpdates}>Check updates!</Button>
             </Grid>
@@ -264,7 +295,8 @@ export default class App extends React.Component<{}, IState> {
                 <Grid item>Playing Now!</Grid>
               </Grid>
             </Grid>
-            <Grid item style={{ flexGrow: 1}}></Grid>
+            <Grid item style={{ flexGrow: 1}}>
+            </Grid>
             <Grid item>
               <FilterMenu 
                 initGameModeValue={this.state.filterGameMode}
