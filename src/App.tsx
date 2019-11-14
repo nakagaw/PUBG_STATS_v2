@@ -266,6 +266,7 @@ export default class App extends React.Component<{}, IState> {
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  style={{ width: '265px' }}
                 />
                 <Tooltip title="ウルムチ設定">
                   <Checkbox
