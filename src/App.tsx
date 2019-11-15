@@ -26,9 +26,6 @@ import {
   Grid,
 } from '@material-ui/core';
 
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@material-ui/icons/CheckBox';
-
 // ============================================
 // ============================================
 
@@ -128,11 +125,10 @@ export default class App extends React.Component<{}, IState> {
   // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
   public checkUpdates = async (event?: any) => {
     localStorage.setItem('_pubgUserID', this.state.userID);
-    // input 入力チェック
+    // input 入力チェックしてはいってたら
     if(this.state.playingDate !== ""){
-       // input 入力値が強い・なかったらローカルストレージ
-      localStorage.setItem('_pubgPlayingStartTime', new Date(this.state.playingDate).toString());
-      const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!);
+      localStorage.setItem('_pubgPlayingStartTime', this.state.playingDate); // input => ローカルストレージ
+      const _playingStartTime = new Date(localStorage.getItem('_pubgPlayingStartTime')!); // ローカルストレージ => getMatches
       this.getMatches(this.state.userID, _playingStartTime);
     } else { // input 未入力
       this.getMatches(this.state.userID);
@@ -169,7 +165,7 @@ export default class App extends React.Component<{}, IState> {
     if(_playingState === 'true'){ // Playing Now
       // 開始時間を記録
       const now = new Date();
-      localStorage.setItem('_pubgPlayingStartTime', now.toString()); // こっちは差分チェックで使うのこのフォーマット必須
+      localStorage.setItem('_pubgPlayingStartTime', this.changefilterDateFormat(now.toString()));
       this.setState({playingDate: this.changefilterDateFormat(now.toString()) }); // input用
       this.clearPlayingData();// データクリア
     } else { // Not Playing
@@ -252,7 +248,7 @@ export default class App extends React.Component<{}, IState> {
                   }}
                 />
               </FormControl>
-              <FormControl style={{ marginLeft: '7px', width: '315px',flexDirection: 'row' }}>
+              <FormControl style={{ marginLeft: '7px', width: '305px', flexDirection: 'row', alignItems: 'center' }}>
                 <TextField
                   type="datetime-local"
                   id="filterDate"
@@ -272,11 +268,11 @@ export default class App extends React.Component<{}, IState> {
                   <Checkbox
                     checked={this.state.urumuchiState}
                     onChange={this.urumuchiStateCheck}
+                    disabled={this.state.playingState}
                     value="checked"
-                    color="secondary"
-                    icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                    checkedIcon={<CheckBoxIcon fontSize="small" />}
-                    style={{ flexBasis: '50px' }}
+                    color="default"
+                    style={{ flexBasis: '40px' , height: '40px', marginTop: '2px' }}
+                    
                   />
                 </Tooltip>
               </FormControl>

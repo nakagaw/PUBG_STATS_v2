@@ -43,6 +43,7 @@ export class PubgAPI {
   // Players API から match id を取り出して、Matchs API 叩いて各種データを取り出す
   // ============================================
   public getMatches = async (userID: string, playingStartTime?: Date) => {
+    console.log("PUBG API => " + playingStartTime);
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
     // console.log(playerDataGetResult);
     let playerMatchData = playerDataGetResult!.data.data[0].relationships.matches.data;

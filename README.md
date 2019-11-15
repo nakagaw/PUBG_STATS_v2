@@ -1,44 +1,39 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+You can get today's kills and Average damages from PUBG API.
 
-## Available Scripts
+Upgraded points from ver.1 are,
+1. Made by React & TypeScript with Material UI
+2. Hosted by [Firebase Hosting](https://firebase.google.com/products/hosting/), and You can backup to [Firebase Realtime Database}(https://firebase.google.com/products/realtime-database/)
+3. You can see Chart by [Recharts](http://recharts.org/)
 
-In the project directory, you can run:
 
-### `npm start`
+# 1. Anyway yarn
+```
+$ yarn
+```
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# 2. Get your PUBG API and set to .env file
+1. Get own PUBG API this site => https://developer.playbattlegrounds.com
+2. Create '.env' file on the root dir and put your API key like this:
+```
+REACT_APP_PUBG_API_KEY=
+```
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## 2-1. Using Firebase
+If you want to use Firebase, doing some init work arong Firebase docs and add some values to '.env' file like this:
+```
+REACT_APP_FB_API_KEY=
+REACT_APP_FB_AUTH_DOMAIN=
+REACT_APP_FB_DATABASE_URL=
+REACT_APP_FB_PROJECT_ID=
+REACT_APP_FB_STORAGE_BUCKET=
+REACT_APP_FB_MESSAGING_SENDER_ID=
+REACT_APP_FB_APP_ID=
+```
 
-### `npm test`
+# 3. Run
+```
+$ yarn start
+```
+Please check this URL.
+http://localhost:3000
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
