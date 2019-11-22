@@ -42,7 +42,7 @@ export class PubgAPI {
 
   // Players API から match id を取り出して、Matchs API 叩いて各種データを取り出す
   // ============================================
-  public getMatches = async (userID: string, playingStartTime?: Date) => {
+  public getMatches = async (userID: string, playingStartTime?: Date, urumuchiState?: boolean) => {
     console.log("PUBG API => " + playingStartTime);
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
     // console.log(playerDataGetResult);
@@ -72,20 +72,39 @@ export class PubgAPI {
         if(playingStartTime !== undefined){
           // PlayingStartTimeをマッチ時間の差分みて、開始移行のデータがあればリスト化する
           const startTime = new Date(playingStartTime);
-          let matchTime   = new Date(matcheDataGetResult.data.data.attributes.createdAt);
-          // console.log(matchTime);
-          // console.log(startTime);
-          // _playingStartTime と last match の差分計算（ms）して、試合データがあれば取得
-          const diffTime = startTime.getTime() - matchTime.getTime();
-          var diffMS = Math.floor(diffTime / (1000));
-          if(diffMS < 0){
+          let matchTime = new Date(matcheDataGetResult.data.data.attributes.createdAt);
+          console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+          console.log("startTime    => " + startTime)
+          console.log("APIdataTime => " + matcheDataGetResult.data.data.attributes.createdAt)
+
+          if (urumuchiState === true) { // ウルムチ設定のときはマッチ時間も +1h して日本時間にして差分計算
+            let shift = new Date(matchTime.getTime()+9*60*60*1000).toISOString().split('.')[0];
+            console.log("matchTime +1h => " + shift)
+            let urumuchiTime = new Date(shift);
+            // _playingStartTime と last match の差分計算（ms）して、試合データがあれば取得
+            const diffTime = startTime.getTime() - urumuchiTime.getTime();
+            var diffMS = Math.floor(diffTime / (1000));
             // console.log(diffMS);
-            if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
-              matcheList.push(matcheDataGetResult.data);
+            if(diffMS < 0){
+              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
+                matcheList.push(matcheDataGetResult.data);
+              }
+            } else {
+              console.log("該当マッチなし");
             }
           } else {
+            console.log("matchTime   => " + matchTime)
+            // _playingStartTime と last match の差分計算（ms）して、試合データがあれば取得
+            const diffTime = startTime.getTime() - matchTime.getTime();
+            var diffMS = Math.floor(diffTime / (1000));
             // console.log(diffMS);
-            // console.log("該当マッチなし");
+            if(diffMS < 0){
+              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
+                matcheList.push(matcheDataGetResult.data);
+              }
+            } else {
+              console.log("該当マッチなし");
+            }
           }
         } else {
           if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
@@ -100,7 +119,7 @@ export class PubgAPI {
     // =====================================================
     let statsDataList: any = {};
     statsDataList["data"] = [];
-    // let telemetryList = [];
+    let telemetryList = [];
 
     // マッチデータ
     for (let y = 0; y < matcheList.length; y++) {
@@ -128,16 +147,16 @@ export class PubgAPI {
         }
         // stock telemetry data json
         // it have to stock big JSON and perse, so next time
-        // if(matchsDetaDetail[z].type === "asset") {
-        //   if(matchsDetaDetail[z].attributes.URL !== null) {
-        //     telemetryList.push(matchsDetaDetail[z].attributes.URL);
-        //   }
-        // }
+        if(matchsDetaDetail[z].type === "asset") {
+          if(matchsDetaDetail[z].attributes.URL !== null) {
+            telemetryList.push(matchsDetaDetail[z].attributes.URL);
+          }
+        }
       }
       statsDataList.data[y] = statsData;
       // console.log(JSON.stringify(matcheList[y],undefined,1));
       // console.log(JSON.stringify(matchsDetaDetail,undefined,1));
-      // console.log(JSON.stringify(telemetryList,undefined,1));
+      console.log(JSON.stringify(telemetryList,undefined,1));
     }
     // 日付を最後に追加
     statsDataList.playedDate = statsDataList.data[matcheList.length -1].matcheDate;

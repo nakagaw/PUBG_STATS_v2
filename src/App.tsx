@@ -108,7 +108,7 @@ export default class App extends React.Component<{}, IState> {
   public getMatches = async (userID: string, playingStartTime?: Date) => {
     this.setState({getApiDataLoading: true});
     const pubgApi = new PubgAPI();
-    pubgApi.getMatches(userID, playingStartTime)
+    pubgApi.getMatches(userID, playingStartTime, this.state.urumuchiState)
     .then( value => {
       this.setState({apiData: value});
       const pubgApiData = JSON.stringify(value,undefined,1);
