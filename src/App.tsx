@@ -3,6 +3,7 @@ import * as React from 'react';
 // Classes
 import { PubgAPI } from './classes/PubgAPI';
 import { StatsData } from './classes/StatsData';
+import { JsonParse } from './classes/JsonParse';
 
 // Components
 import Loading from './components/Loading';
@@ -18,6 +19,7 @@ import {
   Typography,
   FormControl,
   TextField,
+  IconButton,
   Button,
   Switch,
   Checkbox,
@@ -26,6 +28,9 @@ import {
   Grid,
 } from '@material-ui/core';
 
+import {
+  SportsKabaddi
+} from '@material-ui/icons';
 // ============================================
 // ============================================
 
@@ -33,8 +38,9 @@ interface IState {
   hasError: boolean;
   value: string;
   userID: string;
-  apiData: any;
-  apiDataError: string;
+  apiStatsData: any;
+  apiTelemetryData: any;
+  apiGetError: string;
   getApiDataLoading: boolean;
   playingState: boolean;
   playingDate: string;
@@ -54,8 +60,9 @@ export default class App extends React.Component<{}, IState> {
       hasError: false,
       value: "",
       userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
-      apiData: JSON.parse(localStorage.getItem('_pubgApiData')!) ? JSON.parse(localStorage.getItem('_pubgApiData')!) : [], // 初期テーブル描画
-      apiDataError: "No data",
+      apiStatsData: JSON.parse(localStorage.getItem('_pubgApiStatsData')!) ? JSON.parse(localStorage.getItem('_pubgApiStatsData')!) : [], // 初期テーブル描画
+      apiTelemetryData: JSON.parse(localStorage.getItem('_pubgApiTelemetryData')!) ? JSON.parse(localStorage.getItem('_pubgApiTelemetryData')!) : [], 
+      apiGetError: "No data",
       getApiDataLoading: false,
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
       playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
@@ -104,25 +111,29 @@ export default class App extends React.Component<{}, IState> {
     }
   }
 
-  // とりあえず50件のデータとって _pubgApiData に保存するやつ
+  // とりあえず50件のデータとって _pubgApiStatsData に保存するやつ
   public getMatches = async (userID: string, playingStartTime?: Date) => {
     this.setState({getApiDataLoading: true});
     const pubgApi = new PubgAPI();
     pubgApi.getMatches(userID, playingStartTime, this.state.urumuchiState)
     .then( value => {
-      this.setState({apiData: value});
-      const pubgApiData = JSON.stringify(value,undefined,1);
-      // console.log(pubgApiData);
-      localStorage.setItem('_pubgApiData', pubgApiData);
+      console.log(value[0]);
+      console.log(value[1]);
+      this.setState({apiStatsData: value[0]});
+      this.setState({apiTelemetryData: value[1]});
+      const pubgApiStatsData = JSON.stringify(value[0],undefined,1);
+      const pubgApiTelemetryData = JSON.stringify(value[1]);
+      localStorage.setItem('_pubgApiStatsData', pubgApiStatsData);
+      localStorage.setItem('_pubgApiTelemetryData', pubgApiTelemetryData);
       this.setState({getApiDataLoading: false});
     }, reason => {
-      this.setState({apiDataError: "Should Play!"});
+      this.setState({apiGetError: "Should Play!"});
       console.log("Error => " + reason);
       this.setState({getApiDataLoading: false});
     } );
   }
 
-  // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiData 更新するやつ
+  // Play開始時間移行の最新データがあるかチェックしてあったら _pubgApiStatsData 更新するやつ
   public checkUpdates = async (event?: any) => {
     localStorage.setItem('_pubgUserID', this.state.userID);
     // input 入力チェックしてはいってたら
@@ -137,7 +148,7 @@ export default class App extends React.Component<{}, IState> {
 
   // 既存ローカルデータと比較してバックアップ保存するか上書き保存するか
   public diffLocalDataCheckSave = () => {
-    const _todayStatsData = localStorage.getItem('_pubgApiData')!;
+    const _todayStatsData = localStorage.getItem('_pubgApiStatsData')!;
     // JSON.parse(_todayStatsData).playedDate じゃなくて、_pubgPlayingStartTime なのは、データ作った日をキーにする意味で
     const _timeStamp = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
     const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _timeStamp)!;
@@ -175,8 +186,8 @@ export default class App extends React.Component<{}, IState> {
 
   // Play中のデータとローカルストレージ消す
   public clearPlayingData = () => {
-    localStorage.removeItem('_pubgApiData'); 
-    this.setState({ apiData: [] })
+    localStorage.removeItem('_pubgApiStatsData'); 
+    this.setState({ apiStatsData: [] })
   }
 
   // とってきた過去データを保存 左から右へ
@@ -216,6 +227,15 @@ export default class App extends React.Component<{}, IState> {
     this.setState({urumuchiState: event.target.checked });
   }
 
+
+  // getEnemiesData
+  public getEnemiesData = () => {
+    console.log("Hello!")
+    const JSON = new JsonParse();
+    JSON.getTelemetryData();
+  }
+
+
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
@@ -229,7 +249,7 @@ export default class App extends React.Component<{}, IState> {
             <Toolbar>
               <Navbar userID={this.state.userID} />
               <Typography variant="h6" component="h1" noWrap>
-                TODAY's STATS
+                {/* TODAY's STATS */}
               </Typography>
             </Toolbar>
             <Grid item>
@@ -295,6 +315,9 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{ flexGrow: 1}}>
             </Grid>
             <Grid item>
+              <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData}>
+                <SportsKabaddi />
+              </IconButton>
               <FilterMenu 
                 initGameModeValue={this.state.filterGameMode}
                 initSeasonValue={this.state.filterSeason}
@@ -308,10 +331,10 @@ export default class App extends React.Component<{}, IState> {
           <Grid container spacing={4} wrap="nowrap">
             <Grid item style={{ padding: '0'}}>
               <Paper style={{ backgroundColor: "#292929"}}>
-                {this.state.apiData.length !== 0 ? (
-                  <StatsDataTable tableData={this.state.apiData} filterGameMode={this.state.filterGameMode} />
+                {this.state.apiStatsData.length !== 0 ? (
+                  <StatsDataTable tableData={this.state.apiStatsData} filterGameMode={this.state.filterGameMode} />
                 ) : (
-                  <p style={{padding: '10px', minWidth: "127px", textAlign: "center"}}>{this.state.apiDataError}</p>
+                  <p style={{padding: '10px', minWidth: "127px", textAlign: "center"}}>{this.state.apiGetError}</p>
                 )}
               </Paper>
             </Grid>

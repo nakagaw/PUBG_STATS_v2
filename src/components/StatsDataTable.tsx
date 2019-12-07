@@ -9,6 +9,13 @@ import {
   TableRow,
 } from '@material-ui/core';
 
+
+import {
+  LooksOne,
+  LooksTwo,
+  Looks3
+} from '@material-ui/icons';
+
 const StyledTableHead = styled(TableHead)`
   background-color: #383838;
   border-top-left-radius: 4px;
@@ -104,11 +111,20 @@ const StatsDataTable = ({
                 })()}
                 {value.damageDealt > 0 ?
                   (
-                    <span style={{ color:  "#ac77dc", fontStyle: "italic"}}> - {value.damageDealt}</span>
+                    <span style={{ color:  "#8f63b7", fontStyle: "italic"}}> ({value.damageDealt})</span>
                   ) : (
-                    <span style={{ color:  "#4c4c4c"}}> - {value.damageDealt}</span>
+                    <span style={{ color:  "#4c4c4c"}}> ({value.damageDealt})</span>
                   )
                 }
+                {(() => {
+                  if (value.winPlace === 1) {
+                    return <span style={{ marginLeft: "3px" }}><LooksOne style={{ verticalAlign: "middle", color: "#d1d426", width: "16px", height: "16px"}} /></span>
+                  } else if (value.winPlace === 2) {
+                    return <span style={{ marginLeft: "3px" }}><LooksTwo style={{ verticalAlign: "middle", color: "#58b194", width: "16px", height: "16px"}} /></span>
+                  } else if (value.winPlace === 3) {
+                    return <span style={{ marginLeft: "3px" }}><Looks3 style={{ verticalAlign: "middle", color: "#a5a5a5", width: "16px", height: "16px"}} /></span>
+                  }
+                })()}
               </StyledTableCell>
               <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px", whiteSpace: "nowrap"}}>{value.gameMode}</StyledTableCell>
             </TableRow>

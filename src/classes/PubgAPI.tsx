@@ -96,9 +96,9 @@ export class PubgAPI {
             console.log("matchTime   => " + matchTime)
             // _playingStartTime と last match の差分計算（ms）して、試合データがあれば取得
             const diffTime = startTime.getTime() - matchTime.getTime();
-            var diffMS = Math.floor(diffTime / (1000));
-            // console.log(diffMS);
-            if(diffMS < 0){
+            var diffMS2 = Math.floor(diffTime / (1000));
+            // console.log(diffMS2);
+            if(diffMS2 < 0){
               if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
                 matcheList.push(matcheDataGetResult.data);
               }
@@ -156,13 +156,13 @@ export class PubgAPI {
       statsDataList.data[y] = statsData;
       // console.log(JSON.stringify(matcheList[y],undefined,1));
       // console.log(JSON.stringify(matchsDetaDetail,undefined,1));
-      console.log(JSON.stringify(telemetryList,undefined,1));
     }
     // 日付を最後に追加
     statsDataList.playedDate = statsDataList.data[matcheList.length -1].matcheDate;
 
+    // console.log(JSON.stringify(telemetryList,undefined,1));
     // console.log(statsDataList);
     console.log("return!!");
-    return statsDataList;
+    return [statsDataList, telemetryList];
   }
 }
