@@ -3,7 +3,7 @@ import * as React from 'react';
 // Classes
 import { PubgAPI } from './classes/PubgAPI';
 import { StatsData } from './classes/StatsData';
-import { JsonParse } from './classes/JsonParse';
+import { FightLog } from './classes/FightLog';
 
 // Components
 import Loading from './components/Loading';
@@ -39,7 +39,8 @@ interface IState {
   value: string;
   userID: string;
   apiStatsData: any;
-  apiTelemetryData: any;
+  apiTelemetryDataURLs: any;
+  fightLog: any;
   apiGetError: string;
   getApiDataLoading: boolean;
   playingState: boolean;
@@ -61,7 +62,8 @@ export default class App extends React.Component<{}, IState> {
       value: "",
       userID: localStorage.getItem('_pubgUserID') ? localStorage.getItem('_pubgUserID')! : "UG_boy", // ID設定
       apiStatsData: JSON.parse(localStorage.getItem('_pubgApiStatsData')!) ? JSON.parse(localStorage.getItem('_pubgApiStatsData')!) : [], // 初期テーブル描画
-      apiTelemetryData: JSON.parse(localStorage.getItem('_pubgApiTelemetryData')!) ? JSON.parse(localStorage.getItem('_pubgApiTelemetryData')!) : [], 
+      apiTelemetryDataURLs: JSON.parse(localStorage.getItem('_pubgApiTelemetryDataURLs')!) ? JSON.parse(localStorage.getItem('_pubgApiTelemetryDataURLs')!) : [],
+      fightLog: JSON.parse(localStorage.getItem('_pubgFightLog')!) ? JSON.parse(localStorage.getItem('_pubgFightLog')!) : [],
       apiGetError: "No data",
       getApiDataLoading: false,
       playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
@@ -116,17 +118,17 @@ export default class App extends React.Component<{}, IState> {
     this.setState({getApiDataLoading: true});
     const pubgApi = new PubgAPI();
     pubgApi.getMatches(userID, playingStartTime, this.state.urumuchiState)
-    .then( value => {
-      console.log(value[0]);
-      console.log(value[1]);
+    .then((value: any) => {
+      // console.log(value[0]);
+      // console.log(value[1]);
       this.setState({apiStatsData: value[0]});
-      this.setState({apiTelemetryData: value[1]});
+      this.setState({apiTelemetryDataURLs: value[1]});
       const pubgApiStatsData = JSON.stringify(value[0],undefined,1);
-      const pubgApiTelemetryData = JSON.stringify(value[1]);
+      const pubgApiTelemetryDataURLs = JSON.stringify(value[1]);
       localStorage.setItem('_pubgApiStatsData', pubgApiStatsData);
-      localStorage.setItem('_pubgApiTelemetryData', pubgApiTelemetryData);
+      localStorage.setItem('_pubgApiTelemetryDataURLs', pubgApiTelemetryDataURLs);
       this.setState({getApiDataLoading: false});
-    }, reason => {
+    }, (reason: any) => {
       this.setState({apiGetError: "Should Play!"});
       console.log("Error => " + reason);
       this.setState({getApiDataLoading: false});
@@ -149,21 +151,23 @@ export default class App extends React.Component<{}, IState> {
   // 既存ローカルデータと比較してバックアップ保存するか上書き保存するか
   public diffLocalDataCheckSave = () => {
     const _todayStatsData = localStorage.getItem('_pubgApiStatsData')!;
-    // JSON.parse(_todayStatsData).playedDate じゃなくて、_pubgPlayingStartTime なのは、データ作った日をキーにする意味で
-    const _timeStamp = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
-    const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _timeStamp)!;
-    const hash = Math.random().toString(32).substring(2);
-    if(_todayStatsData !== _todayStatsDataCheck) { //空以外の既存データと違うデータがあったら保存
-      if(_todayStatsData !== "[]") {
-        localStorage.setItem("_pubgStatsData__" + _timeStamp, _todayStatsData);
-        console.log('◎ Saved to Local strage with Key: ' + _timeStamp);
-      }
-    } else { // 同じでも、データがあったら念の為ハッシュ付きで
-      if(_todayStatsData !== null) {
+    // JSON.parse(_todayStatsData).playedDate じゃなくて、_pubgPlayingStartTime なのは、データ作った日をキーにする意味で => なんか微妙に不整合起こるのでやめ
+    // const _timeStamp = new Date(localStorage.getItem('_pubgPlayingStartTime')!).toISOString().split(/T/)[0];
+    if(_todayStatsData) {
+      const shift = JSON.parse(_todayStatsData).playedDate.split("/");
+      const _timeStamp = shift[0] + "-" + shift[1] + "-" + shift[2];
+      const _todayStatsDataCheck = localStorage.getItem("_pubgStatsData__" + _timeStamp)!;
+      const hash = Math.random().toString(32).substring(2);
+      if(_todayStatsData !== _todayStatsDataCheck) { //空以外の既存データと違うデータがあったら保存
+        if(_todayStatsData !== "[]") {
+          localStorage.setItem("_pubgStatsData__" + _timeStamp, _todayStatsData);
+          console.log('◎ Saved to Local strage with Key: ' + _timeStamp);
+        }
+      } else { // 同じでも、データがあったら念の為ハッシュ付きで
         localStorage.setItem(_timeStamp + "__bak__" + hash, _todayStatsData);
         console.log('△ Already saved to Local strage, so + hash to Key: ' + _timeStamp + "-" + hash);
       }
-    }
+    };
   }
 
   // Play中かどうかのやつ
@@ -186,7 +190,7 @@ export default class App extends React.Component<{}, IState> {
 
   // Play中のデータとローカルストレージ消す
   public clearPlayingData = () => {
-    localStorage.removeItem('_pubgApiStatsData'); 
+    localStorage.removeItem('_pubgApiStatsData');
     this.setState({ apiStatsData: [] })
   }
 
@@ -200,10 +204,16 @@ export default class App extends React.Component<{}, IState> {
   // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
   public createStatsTable = (event?: any) => {
     this.setState({createTableLoading: true});
-    const statsTableData =  new  StatsData().create(this.state.filterSeason);
-    this.setState({stockApiData: statsTableData});
-    // console.log(statsTableData);
-    this.setState({createTableLoading: false});
+    const statsTableData = new StatsData();
+    statsTableData.create(this.state.filterSeason)
+    .then((value: any) => {
+      this.setState({stockApiData: value});
+      this.setState({createTableLoading: false});
+    }, (reason: any) => {
+      console.log("statsTableData ないよー => " +  reason);
+      this.setState({createTableLoading: false});
+    });
+    
   }
 
   // フィルターのステート管理
@@ -227,14 +237,22 @@ export default class App extends React.Component<{}, IState> {
     this.setState({urumuchiState: event.target.checked });
   }
 
-
   // getEnemiesData
   public getEnemiesData = () => {
-    console.log("Hello!")
-    const JSON = new JsonParse();
-    JSON.getTelemetryData();
+    this.setState({getApiDataLoading: true});
+    const urls = JSON.parse(localStorage.getItem('_pubgApiTelemetryDataURLs')!);
+    const fightLog = new FightLog();
+    fightLog.getTelemetryData(urls)
+    .then((value: any) => {
+      // localStorage.setItem('_pubgFightLog', value);
+      // this.setState({fightLog: value});
+      console.log(value);
+      this.setState({getApiDataLoading: false});
+    }, (reason: any) => {
+      console.log("TelemetryData ないよー => " +  reason);
+      this.setState({getApiDataLoading: false});
+    });
   }
-
 
   render() {
     if (this.state.hasError) {
@@ -292,7 +310,7 @@ export default class App extends React.Component<{}, IState> {
                     value="checked"
                     color="default"
                     style={{ flexBasis: '40px' , height: '40px', marginTop: '2px' }}
-                    
+
                   />
                 </Tooltip>
               </FormControl>
@@ -315,10 +333,12 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{ flexGrow: 1}}>
             </Grid>
             <Grid item>
-              <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData}>
-                <SportsKabaddi />
-              </IconButton>
-              <FilterMenu 
+              <Tooltip title="Get テレメンタリー(beta)">
+                <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData}>
+                  <SportsKabaddi />
+                </IconButton>
+              </Tooltip>
+              <FilterMenu
                 initGameModeValue={this.state.filterGameMode}
                 initSeasonValue={this.state.filterSeason}
                 filterGameModeValue={this.filterGameModeChange}

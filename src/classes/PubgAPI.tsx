@@ -16,14 +16,15 @@ const axios: AxiosInstance = axiosBase.create({
 });
 
 interface StatsData {
-  matcheDate? : any;
-  matcheTime? : string;
-  gameMode?   : string;
-  mapName?    : string;
-  rosters?    : number;
-  winPlace?   : number;
-  damageDealt?: number;
-  kills?      : number;
+  matcheDate?    : any;
+  matcheTime?    : string;
+  gameMode?      : string;
+  mapName?       : string;
+  rosters?       : number;
+  winPlace?      : number;
+  damageDealt?   : number;
+  kills?         : number;
+  telemetryURL?  : string;
 }
 
 export class PubgAPI {
@@ -43,7 +44,6 @@ export class PubgAPI {
   // Players API から match id を取り出して、Matchs API 叩いて各種データを取り出す
   // ============================================
   public getMatches = async (userID: string, playingStartTime?: Date, urumuchiState?: boolean) => {
-    console.log("PUBG API => " + playingStartTime);
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
     // console.log(playerDataGetResult);
     let playerMatchData = playerDataGetResult!.data.data[0].relationships.matches.data;
@@ -73,9 +73,9 @@ export class PubgAPI {
           // PlayingStartTimeをマッチ時間の差分みて、開始移行のデータがあればリスト化する
           const startTime = new Date(playingStartTime);
           let matchTime = new Date(matcheDataGetResult.data.data.attributes.createdAt);
-          console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-          console.log("startTime    => " + startTime)
-          console.log("APIdataTime => " + matcheDataGetResult.data.data.attributes.createdAt)
+          // console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+          // console.log("startTime    => " + startTime)
+          // console.log("APIdataTime => " + matcheDataGetResult.data.data.attributes.createdAt)
 
           if (urumuchiState === true) { // ウルムチ設定のときはマッチ時間も +1h して日本時間にして差分計算
             let shift = new Date(matchTime.getTime()+9*60*60*1000).toISOString().split('.')[0];
@@ -93,7 +93,6 @@ export class PubgAPI {
               console.log("該当マッチなし");
             }
           } else {
-            console.log("matchTime   => " + matchTime)
             // _playingStartTime と last match の差分計算（ms）して、試合データがあれば取得
             const diffTime = startTime.getTime() - matchTime.getTime();
             var diffMS2 = Math.floor(diffTime / (1000));
@@ -134,15 +133,16 @@ export class PubgAPI {
       statsData.gameMode    = matcheList[y].data.attributes.gameMode;
       statsData.mapName     = matcheList[y].data.attributes.mapName;
       statsData.rosters     = matcheList[y].data.relationships.rosters.data.length;
+      
 
       let matchsDetaDetail = matcheList[y].included;
        // 個人データ
       for (let z = 0; z < matchsDetaDetail.length; z++) {
         if(matchsDetaDetail[z].type === "participant") {
           if(matchsDetaDetail[z].attributes.stats.name === userID) {
-            statsData.winPlace    = matchsDetaDetail[z].attributes.stats.winPlace;
-            statsData.damageDealt = Math.round(matchsDetaDetail[z].attributes.stats.damageDealt * 10) / 10;
-            statsData.kills       = matchsDetaDetail[z].attributes.stats.kills;
+            statsData.winPlace     = matchsDetaDetail[z].attributes.stats.winPlace;
+            statsData.damageDealt  = Math.round(matchsDetaDetail[z].attributes.stats.damageDealt * 10) / 10;
+            statsData.kills        = matchsDetaDetail[z].attributes.stats.kills;
           }
         }
         // stock telemetry data json
@@ -150,6 +150,7 @@ export class PubgAPI {
         if(matchsDetaDetail[z].type === "asset") {
           if(matchsDetaDetail[z].attributes.URL !== null) {
             telemetryList.push(matchsDetaDetail[z].attributes.URL);
+            statsData.telemetryURL = matchsDetaDetail[z].attributes.URL;
           }
         }
       }

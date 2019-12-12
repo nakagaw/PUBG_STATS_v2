@@ -8,6 +8,7 @@ import {
   Radio,
   RadioGroup,
   Divider,
+  Tooltip,
 } from '@material-ui/core';
 
 import {
@@ -51,9 +52,11 @@ const FilterMenu = ({
 
   return(
     <React.Fragment>
-      <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={filterMenuClick}>
-        <FilterList />
-      </IconButton>
+      <Tooltip title="フィルター">
+        <IconButton aria-controls="Filter datas" aria-haspopup="true" onClick={filterMenuClick}>
+          <FilterList />
+        </IconButton>
+      </Tooltip>
       <Menu
         id="simple-menu"
         anchorEl={filterMenuState}

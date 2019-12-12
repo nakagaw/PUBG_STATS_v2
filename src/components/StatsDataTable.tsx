@@ -49,6 +49,11 @@ const StatsDataTable = ({
 }: IProps) => {
 
   // filter stats data
+  if(!tableData){
+    console.log("なんかしらテーブル作成データが破損してるゼ！！");
+    return null;
+  }
+
   const filteredData = tableData.data.filter((item: any, index: number) => {
     if ( filterGameMode === "all" ) {
       return item

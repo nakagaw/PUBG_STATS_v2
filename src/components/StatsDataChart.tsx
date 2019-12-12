@@ -121,7 +121,7 @@ const StatsDataChart = ({
       <div style={{width: "100%", height: "270px"}}>
         <ResponsiveContainer>
           <LineChart data={statsData} margin={{ top: 20, right: 40, left: 0, bottom: 50 }}>
-            <XAxis dataKey="name" tick={<CustomizedAxisTick />} />
+            <XAxis dataKey="name" tick={<CustomizedAxisTick />} interval={0} />
             <YAxis />
             <CartesianGrid stroke="#666" strokeDasharray="2 2" />
             <Line type="linear" dataKey="avgDamage" stroke="#ac77dc" fill="#ac77dc" strokeWidth="2" dot={{ r: 4 }} label={<CustomizedLabel />} />
