@@ -11,7 +11,7 @@ export class FightLog {
   // ============================================
   public goPuppeteer = async (url: string) => {
     try {
-      console.log(url)
+      // console.log(url)
       const encodeURL = encodeURIComponent(url);
       const res = await axios.get('/telemetry/get/' + encodeURL);
       // const res = await axios.get('/telemetry/test/testttttttttt!!!!!');
@@ -22,6 +22,7 @@ export class FightLog {
     return null;
   }
 
+  // シングルモード
   // public getTelemetryData = async (urls: any) => {
   //   let telemetryDataList: any = [];
   //   let puppdata = await this.goPuppeteer('https://telemetry-cdn.playbattlegrounds.com/bluehole-pubg/steam/2019/12/10/16/01/470a73ef-1b66-11ea-a333-8e59c46d5f1a-telemetry.json')
@@ -45,7 +46,7 @@ export class FightLog {
         console.log("Cannot got data from Puppeteer! => " + puppdata);
       }
     }
-    console.log("Get success => " + telemetryDataList.length + " / " + urls.length);
+    console.log("Get success => " + telemetryDataList.length + "/" + urls.length);
     return telemetryDataList;
   }
 

@@ -244,9 +244,24 @@ export default class App extends React.Component<{}, IState> {
     const fightLog = new FightLog();
     fightLog.getTelemetryData(urls)
     .then((value: any) => {
-      // localStorage.setItem('_pubgFightLog', value);
-      // this.setState({fightLog: value});
-      console.log(value);
+      // console.log(value);
+      const _todayStatsData = JSON.parse(localStorage.getItem('_pubgApiStatsData')!);
+      let statsDataListWithFightLog: any = {};
+      const pubgFightLog = _todayStatsData.data.map((item: any, index: number ) => {
+        if(value[index] !== undefined) {
+          let url = Object.keys(value[index])[0];
+          if(item.telemetryURL === url) {
+            console.log(Object.values(value[index]));
+            item.fightLog = Object.values(value[index]);
+          }
+          return item;
+        } else {
+          console.log("Value was undefined ... so not added!");
+          return item;
+        }
+      });
+      statsDataListWithFightLog.data = pubgFightLog;
+      localStorage.setItem('_pubgFightLog', JSON.stringify(statsDataListWithFightLog,undefined,1));
       this.setState({getApiDataLoading: false});
     }, (reason: any) => {
       console.log("TelemetryData ないよー => " +  reason);
@@ -262,7 +277,7 @@ export default class App extends React.Component<{}, IState> {
     return (
       <React.Fragment>
         <Loading state={this.state.getApiDataLoading} type="linear" />
-        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
+        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "#222" }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
               <Navbar userID={this.state.userID} />

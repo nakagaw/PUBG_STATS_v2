@@ -44,7 +44,7 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
   const data = JSON.parse(obj);
 
   let fightLog = {};
-  fightLog[req.params.telemetryURL] = Object.values(data).filter((item, index) => {
+  fightLog[req.params.telemetryURL] = Object.values(data).filter((item) => {
     if(item.killer) {
       // 倒した相手
       if (item.killer.name === userID) {
