@@ -32,8 +32,8 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
   await page.goto(
     url,
     {
-      waitUntil: "domcontentloaded", // DOM読み込み完了を待つ
-      timeout: 99999999, // JSONがでかすぎるからタイムアウト伸ばさないと止まる。。
+      waitUntil: 'load', // 読み込み完了を待つ
+      timeout: 0, // JSONがでかすぎるからタイムアウトなし
     }
   );
 
@@ -45,6 +45,9 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
 
   let fightLog = {};
   fightLog[req.params.telemetryURL] = Object.values(data).filter((item) => {
+    if(item.MatchId) {
+      return true
+    }
     if(item.killer) {
       // 倒した相手
       if (item.killer.name === userID) {
@@ -72,6 +75,11 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
   })
   .map((item) => { // さらに name を抽出する
     let namelist = {};
+    if(item.MatchId) {
+      console.log(item.MatchId.split('.')[5]);
+      namelist["gameMode"] = item.MatchId.split('.')[5];
+      return namelist;
+    }
     if(item.killer) {
       // 倒した相手
       if (item.killer.name === userID) {

@@ -256,15 +256,15 @@ export default class App extends React.Component<{}, IState> {
           }
           return item;
         } else {
-          console.log("Value was undefined ... so not added!");
+          console.log("Value was undefined ind FightLog.tsx ... so not added!");
           return item;
         }
       });
-      statsDataListWithFightLog.data = pubgFightLog;
+      statsDataListWithFightLog.data = pubgFightLog; // _pubgApiStatsData と同じデータ構造にした
       localStorage.setItem('_pubgFightLog', JSON.stringify(statsDataListWithFightLog,undefined,1));
       this.setState({getApiDataLoading: false});
     }, (reason: any) => {
-      console.log("TelemetryData ないよー => " +  reason);
+      console.log("Puppeteer はいけてるっぽいけど TelemetryData ないよー => " +  reason);
       this.setState({getApiDataLoading: false});
     });
   }
