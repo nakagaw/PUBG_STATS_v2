@@ -15,7 +15,6 @@ export class FightLog {
       console.log(url)
       const encodeURL = encodeURIComponent(url);
       const res = await axios.get('/telemetry/get/' + encodeURL);
-      // const res = await axios.get('/telemetry/test/testttttttttt!!!!!');
       return res;
     } catch (error) {
       if (!error.response) {
@@ -28,43 +27,34 @@ export class FightLog {
     return null;
   }
 
+  // puppeteer server に axios で urlリストでリクエストして、
+  // スクレイピングしてとってきた 敵のIDリストで pubg api getSeasonStats 叩いて
+  // KD を計算して配列にして返すやつ
   public getTelemetryData = async (urls: any) => {
-    let fightLogList: any = [];
+    let fightLogWithKD: any = {};
     for (let z = 0; z < urls.length; z++) {
-      let puppdata = await this.goPuppeteer(urls[z])
+      let puppdata = await this.goPuppeteer(urls[z]);
       if(puppdata !== null) {
-        let killlog: any = Object.values(puppdata.data)[0];
-        for (let q = 0; q < killlog.length; q++) {
-          if(killlog[q].win){
+        let fightLog: any = {};
+        fightLog = Object.values(puppdata.data)[0];
+        // console.log(fightLog);
+        const gameMode = fightLog[0].gameMode;
+        for (let q = 0; q < fightLog.length; q++) {
+          let winOrLose: string = Object.keys(fightLog[q])[0];
+          if( winOrLose === "win" || winOrLose === "lose"){
+            let userID: any = Object.values(fightLog[q]);
             const pubgApi = new PubgAPI();
-            pubgApi.getSeasonStats(killlog[q].win)
-            .then((value: any) => {
-              // console.log(value);
-              fightLogList[q]['win'] = killlog[q].win;
-              fightLogList[q]['kd'] = value;
-            }, (reason: any) => {
-              console.log("Can not getSeasonStats Error => " + reason);
-            });
-          } else if (killlog[q].lose) {
-            const pubgApi = new PubgAPI();
-            pubgApi.getSeasonStats(killlog[q].lose)
-            .then((value: any) => {
-              // console.log(value);
-              fightLogList[q]['lose'] = killlog[q].lose;
-              fightLogList[q]['kd'] = value;
-            }, (reason: any) => {
-              console.log("Can not getSeasonStats Error => " + reason);
-            });
-          } else {
-            console.log("なんかなぞのもの");
+            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode)
           }
         }
+        // gameModeは削除して、url ごとにオブジェクト化
+        fightLog.shift();
+        fightLogWithKD[urls[z]] = fightLog;
       } else {
         console.log("Cannot got data from Puppeteer! => " + puppdata);
       }
     }
-    console.log(fightLogList);
-    console.log("Get success => " + fightLogList.length + "/" + urls.length);
-    return fightLogList;
+    // console.log(fightLogWithKD);
+    return fightLogWithKD;
   }
 }

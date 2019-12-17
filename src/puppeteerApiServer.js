@@ -1,4 +1,4 @@
-
+// puppeteer をつかって、telemetry の JSONデータをスクレイピングするやつ
 const express = require('express')
 const cors = require('cors');
 const puppeteer = require('puppeteer');
@@ -29,25 +29,35 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
     
     });
   const page = await browser.newPage();
+  console.log("... loading");
+  // process.on("unhandledRejection", (reason, p) => {
+  //   // https://github.com/puppeteer/puppeteer/issues/1390#issuecomment-344506047
+  //   console.error("Unhandled Rejection at: Promise", p, "reason:", reason);
+  //   browser.close();
+  // });
+try {
   await page.goto(
     url,
     {
       waitUntil: 'load', // 読み込み完了を待つ
       timeout: 0, // JSONがでかすぎるからタイムアウトなし
+      // それでも NetworkError でるときブラウザのタイムアウトも注意 => https://scrapbox.io/kadoyau/%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E3%81%AE%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AF%E4%BD%95%E7%A7%92%EF%BC%9F
     }
   );
+  console.log("... will get content");
+} catch (error) {
+  console.log(error);
+  browser.close();
+}
 
   // 開いたページの pre タグ内にあるJSONテキストを取得
   const obj = await page.$eval('pre', selector => {
     return selector.textContent
   })
   const data = JSON.parse(obj);
-
+  console.log("... got content");
   let fightLog = {};
   fightLog[req.params.telemetryURL] = Object.values(data).filter((item) => {
-    if(item.MatchId) {
-      return true
-    }
     if(item.killer) {
       // 倒した相手
       if (item.killer.name === userID) {
@@ -75,11 +85,6 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
   })
   .map((item) => { // さらに name を抽出する
     let namelist = {};
-    if(item.MatchId) {
-      console.log(item.MatchId.split('.')[5]);
-      namelist["gameMode"] = item.MatchId.split('.')[5];
-      return namelist;
-    }
     if(item.killer) {
       // 倒した相手
       if (item.killer.name === userID) {
@@ -114,9 +119,13 @@ app.get('/telemetry/get/:telemetryURL', async (req, res) => {
       return null
     }
   });
+  const gameMode = { gameMode : Object.values(data)[0].MatchId.split('.')[5] };
+  fightLog[req.params.telemetryURL].unshift(gameMode);
+  // console.log(fightLog);
 
   res.status(202).send(fightLog);
   await browser.close();
+  console.log("... close browser");
 })
 
 app.listen(4649, () => console.log(`Start puppeteer api server !!!!`))

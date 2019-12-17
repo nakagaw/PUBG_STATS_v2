@@ -247,18 +247,16 @@ export default class App extends React.Component<{}, IState> {
       // console.log(value);
       const _todayStatsData = JSON.parse(localStorage.getItem('_pubgApiStatsData')!);
       let statsDataListWithFightLog: any = {};
+      // _todayStatsData の telemetryURL と FightLog の url で照合して合致したら
       const pubgFightLog = _todayStatsData.data.map((item: any, index: number ) => {
-        if(value[index] !== undefined) {
-          let url = Object.keys(value[index])[0];
-          if(item.telemetryURL === url) {
-            console.log(Object.values(value[index]));
-            item.fightLog = Object.values(value[index]);
-          }
-          return item;
-        } else {
-          console.log("Value was undefined ind FightLog.tsx ... so not added!");
-          return item;
+        // console.log(Object.keys(value)[index]);
+        // console.log(item.telemetryURL);
+        let url = Object.keys(value)[index];
+        if(item.telemetryURL === url) {
+          // console.log(value);
+          item["fightLog"] = value[url];
         }
+        return item;
       });
       statsDataListWithFightLog.data = pubgFightLog; // _pubgApiStatsData と同じデータ構造にした
       localStorage.setItem('_pubgFightLog', JSON.stringify(statsDataListWithFightLog,undefined,1));

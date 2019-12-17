@@ -17,8 +17,12 @@ app.get('/pupp/:text', async (req, res) => {
   // URLじゃなかったときのエラーハンドリング必要
   const browser = await puppeteer.launch({args: [
     '--no-sandbox',
-    '-single-process',
-    '--disable-setuid-sandbox'
+    '--disable-setuid-sandbox',
+    '-–disable-dev-shm-usage',
+    '--disable-gpu',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process'
   ]});
   const page = await browser.newPage();
   await page.goto('https://www.google.com/');
