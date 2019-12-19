@@ -43,8 +43,9 @@ export class FightLog {
           let winOrLose: string = Object.keys(fightLog[q])[0];
           if( winOrLose === "win" || winOrLose === "lose"){
             let userID: any = Object.values(fightLog[q]);
-            const pubgApi = new PubgAPI();
-            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode)
+            // kd 取るところ課題たくさんあるのでオフ
+            // const pubgApi = new PubgAPI();
+            // fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode)
           }
         }
         // gameModeは削除して、url ごとにオブジェクト化
@@ -54,7 +55,7 @@ export class FightLog {
         console.log("Cannot got data from Puppeteer! => " + puppdata);
       }
     }
-    // console.log(fightLogWithKD);
+    console.log(fightLogWithKD);
     return fightLogWithKD;
   }
 }

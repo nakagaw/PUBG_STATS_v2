@@ -66,8 +66,8 @@ export default class App extends React.Component<{}, IState> {
       fightLog: JSON.parse(localStorage.getItem('_pubgFightLog')!) ? JSON.parse(localStorage.getItem('_pubgFightLog')!) : [],
       apiGetError: "No data",
       getApiDataLoading: false,
-      playingState: localStorage.getItem('_playingState') === "true" ? true : false, //Play中かどうかの判定
-      playingDate: localStorage.getItem('_playingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
+      playingState: localStorage.getItem('__pubgPlayingState') === "true" ? true : false, //Play中かどうかの判定
+      playingDate: localStorage.getItem('__pubgPlayingState') === "true" ? this.changefilterDateFormat(localStorage.getItem('_pubgPlayingStartTime')!) : "",
       urumuchiState: localStorage.getItem('_urumuchiState') === "true" ? true : false,
       stockApiData: [],
       filterMenuState: null,
@@ -173,11 +173,11 @@ export default class App extends React.Component<{}, IState> {
   // Play中かどうかのやつ
   public playingStateCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
     const playingStateChecked = event.target.checked;
-    localStorage.setItem('_playingState', playingStateChecked.toString());
+    localStorage.setItem('__pubgPlayingState', playingStateChecked.toString());
     this.setState({playingState: event.target.checked });
     // ローカルストレージからPlay中かどうかの判定
-    const _playingState = localStorage.getItem('_playingState');
-    if(_playingState === 'true'){ // Playing Now
+    const __pubgPlayingState = localStorage.getItem('__pubgPlayingState');
+    if(__pubgPlayingState === 'true'){ // Playing Now
       // 開始時間を記録
       const now = new Date();
       localStorage.setItem('_pubgPlayingStartTime', this.changefilterDateFormat(now.toString()));
@@ -345,8 +345,8 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
             <Grid item>
               <Tooltip title="Get テレメンタリー(beta)">
-                <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData}>
-                  <SportsKabaddi />
+                <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData} disabled={this.state.apiStatsData.length === 0}>
+                  <SportsKabaddi color={this.state.apiStatsData.length === 0 ? 'disabled' : 'secondary'} />
                 </IconButton>
               </Tooltip>
               <FilterMenu
