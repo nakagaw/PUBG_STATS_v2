@@ -204,16 +204,14 @@ export default class App extends React.Component<{}, IState> {
   // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
   public createStatsTable = (event?: any) => {
     this.setState({createTableLoading: true});
-    const statsTableData = new StatsData();
-    statsTableData.create(this.state.filterSeason)
-    .then((value: any) => {
-      this.setState({stockApiData: value});
+    try {
+      const statsTableData = new StatsData().create(this.state.filterSeason);
+      this.setState({stockApiData: statsTableData});
       this.setState({createTableLoading: false});
-    }, (reason: any) => {
+    } catch( reason ) {
       console.log("statsTableData ないよー => " +  reason);
       this.setState({createTableLoading: false});
-    });
-    
+    }
   }
 
   // フィルターのステート管理

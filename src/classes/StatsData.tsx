@@ -3,8 +3,8 @@ import { LocalStorageControls } from './LocalStorageControls';
 export class StatsData {
 
   // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
-  public create = async (season: string) => {
-    const statsTableKeys: any =  new LocalStorageControls().summarizeStatsDataKeys();
+  public create = (season: string) => {
+    const statsTableKeys: any = new LocalStorageControls().summarizeStatsDataKeys();
     let statsTableData: any = {};
 
     // シーズンフィルタ

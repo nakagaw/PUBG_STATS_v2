@@ -169,16 +169,20 @@ export class PubgAPI {
   // Players API から accountid を取り出して、lifetimeStatsAPI 叩いて通年のKDデータを取り出す
   // ============================================
   public getSeasonStats = async (userID: string, gameMode: string) => {
+    console.log(userID);
     // シーズンじゃなく、トータルの K/D はこれでとれてる
-    // アカウントID取って
+    // アカウントID取ってくるやつ
+    // 短時間に複数回（1分間に10回以上叩くと 429 error で失敗する）
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
+
     let accountID = playerDataGetResult!.data.data[0].id;
+    console.log(accountID);
     // ライフタイムスタッツ取る
     let reqURL = '/shards/steam/players/' + accountID + '/seasons/lifetime';
     // console.log(reqURL);
     let lifetimeData = await this.getAPI(reqURL);
     let kd = (lifetimeData!.data.data.attributes.gameModeStats[gameMode]['kills'] / lifetimeData!.data.data.attributes.gameModeStats[gameMode]['losses']).toFixed(2);
-    console.log(userID +  ' => ' + kd);
+    // console.log(userID +  ' => ' + kd);
     return kd;
   }
 }
