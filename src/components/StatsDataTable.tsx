@@ -25,6 +25,12 @@ const StyledTableHead = styled(TableHead)`
 const StyledTableCell = styled(TableCell)`
   padding: 1px 6px 1px 6px !important;
   font-size: 12px;
+  ul {
+    display: none;
+  }
+  &:hover ul {
+    display: block;
+  }
 `;
 const StyledTableCellA = styled(TableCell)`
   padding: 4px 8px 4px 8px !important;
@@ -36,6 +42,29 @@ const StyledTableCellB = styled(TableCell)`
   background-color: #ac77dc;
   color: black !important;
 `;
+
+const FightLogList = (data: any) => {
+  const listData: any = Object.values(data)[0];
+  console.log(listData);
+  if (!listData) { // データないときはなし
+    return null;
+  }
+  return (
+    <ul style={{textAlign: 'left', color: 'white', position: 'absolute', backgroundColor: 'rgba(0,0,0, .5)', boxShadow: 'rgba(255, 233, 79, .4) 8px 7px 0px 0px', fontSize: '11px', padding: '6px 10px 6px 20px', left: '100px', marginTop: '-17px'}}>
+      {listData.map((item:any, x: number)  => (
+      <li key={x}>
+        {item.win ?
+          (
+            <span>WIN : {item.win}</span>
+          ) : (
+            <span>LOSE: {item.lose}</span>
+          )
+        }
+      </li>
+      ))}
+    </ul>
+  )
+}
 
 
 interface IProps {
@@ -77,6 +106,11 @@ const StatsDataTable = ({
   });
   const avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
 
+  // fightLog
+  // const fightLog = filteredData.map((row: any) => {
+  //   return row.fightLog;
+  // });
+
   const playedDate = tableData.playedDate;
   const statsData  = filteredData;
 
@@ -99,11 +133,11 @@ const StatsDataTable = ({
               <StyledTableCell align="left" style={{whiteSpace: "nowrap"}}>
                 {(() => {
                   if (value.kills >= 7) {
-                    return <span style={{ color: "#ff000c"}}>{value.kills}</span>
+                    return <span style={{ color: "#faff00"}}>{value.kills}</span>
                   } else if (value.kills >= 5) {
-                    return <span style={{ color: "#ff00c8"}}>{value.kills}</span>
+                    return <span style={{ color: "#ff3c00"}}>{value.kills}</span>
                   } else if (value.kills >= 4) {
-                    return <span style={{ color: "#ff00f8"}}>{value.kills}</span>
+                    return <span style={{ color: "#ff00c8"}}>{value.kills}</span>
                   } else if (value.kills >= 3) {
                     return <span style={{ color: "#d24aff"}}>{value.kills}</span>
                   } else if (value.kills >= 2) {
@@ -131,7 +165,10 @@ const StatsDataTable = ({
                   }
                 })()}
               </StyledTableCell>
-              <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px", whiteSpace: "nowrap"}}>{value.gameMode}</StyledTableCell>
+              <StyledTableCell align="right" style={{ color: "#808080", fontSize: "11px", whiteSpace: "nowrap"}}>
+                {value.gameMode}
+                <FightLogList data={value.fightLog} />
+              </StyledTableCell>
             </TableRow>
         ))}
       </TableBody>
