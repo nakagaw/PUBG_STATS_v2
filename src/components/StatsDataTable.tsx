@@ -17,7 +17,6 @@ import {
   FiberManualRecord,
   Close
 } from '@material-ui/icons';
-import zIndex from '@material-ui/core/styles/zIndex';
 
 const StyledTableHead = styled(TableHead)`
   background-color: #383838;
@@ -29,11 +28,18 @@ const StyledTableRow = styled(TableRow)`
   cursor: crosshair;
   position: relative;
   ul {
-    display: none;
+    visibility: hidden;
+    transform: translateX(-5px);
+    opacity: 0;
+    transition-timing-function: ease-in-out;
+    transition-duration: .35s;
+    transition-property: transform,visibility,opacity;
   }
   &:hover {
     ul {
-      display: block;
+      visibility: visible;
+      transform: translateX(0);
+      opacity: 1;
     }
     background-color: #2b272f;
   }
