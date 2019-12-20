@@ -13,8 +13,11 @@ import {
 import {
   LooksOne,
   LooksTwo,
-  Looks3
+  Looks3,
+  FiberManualRecord,
+  Close
 } from '@material-ui/icons';
+import zIndex from '@material-ui/core/styles/zIndex';
 
 const StyledTableHead = styled(TableHead)`
   background-color: #383838;
@@ -22,15 +25,23 @@ const StyledTableHead = styled(TableHead)`
   border-top-right-radius: 4px;
 `;
 
-const StyledTableCell = styled(TableCell)`
-  padding: 1px 6px 1px 6px !important;
-  font-size: 12px;
+const StyledTableRow = styled(TableRow)`
+  cursor: crosshair;
+  position: relative;
   ul {
     display: none;
   }
-  &:hover ul {
-    display: block;
+  &:hover {
+    ul {
+      display: block;
+    }
+    background-color: #2b272f;
   }
+`;
+
+const StyledTableCell = styled(TableCell)`
+  padding: 1px 6px 1px 6px !important;
+  font-size: 12px;
 `;
 const StyledTableCellA = styled(TableCell)`
   padding: 4px 8px 4px 8px !important;
@@ -45,19 +56,29 @@ const StyledTableCellB = styled(TableCell)`
 
 const FightLogList = (data: any) => {
   const listData: any = Object.values(data)[0];
-  console.log(listData);
+  // console.log(listData);
   if (!listData) { // データないときはなし
     return null;
   }
   return (
-    <ul style={{textAlign: 'left', color: 'white', position: 'absolute', backgroundColor: 'rgba(0,0,0, .5)', boxShadow: 'rgba(255, 233, 79, .4) 8px 7px 0px 0px', fontSize: '11px', padding: '6px 10px 6px 20px', left: '100px', marginTop: '-17px'}}>
+    <ul style={{ 
+        textAlign: 'left', 
+        position: 'absolute', 
+        backgroundColor: 'rgba(0, 0, 0, .8)', 
+        boxShadow: 'rgba(163, 0, 255, 0.28) 5px 5px 0px 0px', 
+        fontSize: '11px', 
+        padding: '6px 10px 6px', 
+        left: '80px', 
+        marginTop: '-24px',
+        zIndex: 9999,
+      }}>
       {listData.map((item:any, x: number)  => (
-      <li key={x}>
+      <li key={x} style={{listStyle: 'none'}}>
         {item.win ?
           (
-            <span>WIN : {item.win}</span>
+            <span style={{color: "#20ff00"}}><FiberManualRecord style={{ verticalAlign: "middle", color: "#20ff00", width: "16px", height: "16px", marginRight: "7px"}} />{item.win}</span>
           ) : (
-            <span>LOSE: {item.lose}</span>
+            <span style={{color: "rgb(255, 0, 24)"}}><Close style={{ verticalAlign: "middle", color: "rgb(255, 0, 24)", width: "16px", height: "16px", marginRight: "7px"}} />{item.lose}</span>
           )
         }
       </li>
@@ -129,7 +150,7 @@ const StatsDataTable = ({
           <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} (<span style={{ fontStyle: "italic"}}>{avgDamage}</span>)</StyledTableCellB>
         </TableRow>
         {statsData.map((value: any, i: number) => (
-            <TableRow key={i}>
+            <StyledTableRow key={i}>
               <StyledTableCell align="left" style={{whiteSpace: "nowrap"}}>
                 {(() => {
                   if (value.kills >= 7) {
@@ -169,7 +190,7 @@ const StatsDataTable = ({
                 {value.gameMode}
                 <FightLogList data={value.fightLog} />
               </StyledTableCell>
-            </TableRow>
+            </StyledTableRow>
         ))}
       </TableBody>
     </Table>
