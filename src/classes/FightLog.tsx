@@ -39,13 +39,14 @@ export class FightLog {
         fightLog = Object.values(puppdata.data)[0];
         // console.log(fightLog);
         const gameMode = fightLog[0].gameMode;
+        const seasonID = fightLog[1].seasonID;
         for (let q = 0; q < fightLog.length; q++) {
           let winOrLose: string = Object.keys(fightLog[q])[0];
           if( winOrLose === "win" || winOrLose === "lose"){
             let userID: any = Object.values(fightLog[q]);
-            // kd 取るところ課題たくさんあるのでオフ
-            // const pubgApi = new PubgAPI();
-            // fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode)
+            // kd 取るところ課題たくさんある
+            const pubgApi = new PubgAPI();
+            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID)
           }
         }
         // gameModeは削除して、url ごとにオブジェクト化

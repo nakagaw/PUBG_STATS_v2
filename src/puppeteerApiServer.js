@@ -119,7 +119,12 @@ app.get('/telemetry/get/:telemetryURL', async (req, res, next) => {
         return null
       }
     });
-    const gameMode = { gameMode : Object.values(data)[0].MatchId.split('.')[5] };
+
+    // JSON 冒頭の概要からシーズンとゲームモード取る
+    const matchId = Object.values(data)[0].MatchId.split('.');
+    const seasonID = { seasonID : 'division.' + matchId[1] + '.' + matchId[2] + '.' + matchId[3] };
+    const gameMode = { gameMode : matchId[5] };
+    fightLog[req.params.telemetryURL].unshift(seasonID);
     fightLog[req.params.telemetryURL].unshift(gameMode);
     console.log(fightLog);
 

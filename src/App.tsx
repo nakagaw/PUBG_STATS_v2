@@ -260,8 +260,6 @@ export default class App extends React.Component<{}, IState> {
       statsDataListWithFightLog.data = pubgFightLog; 
       statsDataListWithFightLog.playedDate = _todayStatsData.playedDate;
       localStorage.setItem('_pubgFightLog', JSON.stringify(statsDataListWithFightLog,undefined,1));
-      console.log(_todayStatsData.data.length);
-      console.log(statsDataListWithFightLog.data.length);
       if(_todayStatsData.data.length === statsDataListWithFightLog.data.length) { // 同じ配列数か存在チェックして同じだったら上書き
         console.log('◎ Saved to Local strage after adding FightLog');
         localStorage.setItem('_pubgApiStatsData', JSON.stringify(statsDataListWithFightLog,undefined,1));
