@@ -43,10 +43,15 @@ export class FightLog {
         for (let q = 0; q < fightLog.length; q++) {
           let winOrLose: string = Object.keys(fightLog[q])[0];
           if( winOrLose === "win" || winOrLose === "lose"){
-            let userID: any = Object.values(fightLog[q]);
-            // kd 取るところ課題たくさんある
-            const pubgApi = new PubgAPI();
-            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID);
+            let userID: string = Object.values(fightLog[q]).toString();
+            if (userID === "SelfKill" || userID === "BlueZone") {
+              console.log(userID);
+              fightLog[q]["kd"] = null;
+            } else {
+              console.log(userID);
+              const pubgApi = new PubgAPI();
+              fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID);
+            }
           }
         }
         fightLog.splice(0,2); // gameMode と sasonID は削除

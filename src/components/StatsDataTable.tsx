@@ -84,13 +84,25 @@ const FightLogList = (data: any) => {
       <li key={x} style={{listStyle: 'none'}}>
         {item.win ?
           (
-            <span style={{color: "rgb(36, 236, 96)"}}><FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "7px"}} />{item.win}
-              <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd ? item.kd : "NaN"})</span>
+            <span style={{color: "rgb(36, 236, 96)"}}>
+              <FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "7px"}} />
+              {item.win}
+              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
               {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
             </span>
           ) : (
-            <span style={{color: "rgb(255, 99, 113)"}}><Close style={{ verticalAlign: "bottom", color: "rgb(255, 99, 113)", width: "16px", height: "16px", marginRight: "7px"}} />{item.lose}
-              <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd ? item.kd : "NaN"})</span>
+            <span style={{color: "rgb(255, 99, 113)"}}>
+              <Close style={{ verticalAlign: "bottom", color: "rgb(255, 99, 113)", width: "16px", height: "16px", marginRight: "7px"}} />
+              {(() => {
+                if (item.lose === "SelfKill") {
+                  return "自死"
+                } else if (item.lose === "BlueZone") {
+                  return "安置死"
+                } else {
+                  return item.lose
+                }
+              })()}
+              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
               {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
             </span>
           )
@@ -187,11 +199,11 @@ const StatsDataTable = ({
                 }
                 {(() => {
                   if (value.winPlace === 1) {
-                    return <span style={{ marginLeft: "3px" }}><LooksOne style={{ verticalAlign: "middle", color: "#d1d426", width: "16px", height: "16px"}} /></span>
+                    return <span style={{ marginLeft: "3px" }}><LooksOne style={{ verticalAlign: "text-top", color: "#d1d426", width: "16px", height: "16px"}} /></span>
                   } else if (value.winPlace === 2) {
-                    return <span style={{ marginLeft: "3px" }}><LooksTwo style={{ verticalAlign: "middle", color: "#58b194", width: "16px", height: "16px"}} /></span>
+                    return <span style={{ marginLeft: "3px" }}><LooksTwo style={{ verticalAlign: "text-top", color: "#58b194", width: "16px", height: "16px"}} /></span>
                   } else if (value.winPlace === 3) {
-                    return <span style={{ marginLeft: "3px" }}><Looks3 style={{ verticalAlign: "middle", color: "#a5a5a5", width: "16px", height: "16px"}} /></span>
+                    return <span style={{ marginLeft: "3px" }}><Looks3 style={{ verticalAlign: "text-top", color: "#a5a5a5", width: "16px", height: "16px"}} /></span>
                   }
                 })()}
               </StyledTableCell>

@@ -172,7 +172,6 @@ export class PubgAPI {
     try {
       // アカウントID取ってくるやつ
       // 短時間に複数回（1分間に10回以上叩くと 429 error で失敗する）
-
       let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
       let accountID = playerDataGetResult!.data.data[0].id;
       // console.log(accountID);
