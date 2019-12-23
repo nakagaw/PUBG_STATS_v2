@@ -96,6 +96,8 @@ const StatsDataChart = ({
   }
   const totalAvgKD = (avgKD/Object.keys(chartData).length).toFixed(2);
   const totalAvgDMG = (avgDMG/Object.keys(chartData).length).toFixed(1);
+  localStorage.setItem('_pubgTotalAvgKD', totalAvgKD);
+  localStorage.setItem('_pubgTotalAvgDMG', totalAvgDMG);
   // console.log(totalAvgKD );
   // console.log(totalAvgDMG );
   // console.log(statsData);

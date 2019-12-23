@@ -46,12 +46,12 @@ export class FightLog {
             let userID: any = Object.values(fightLog[q]);
             // kd 取るところ課題たくさんある
             const pubgApi = new PubgAPI();
-            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID)
+            fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID);
           }
         }
-        // gameModeは削除して、url ごとにオブジェクト化
-        fightLog.shift();
-        fightLogWithKD[urls[z]] = fightLog;
+        fightLog.splice(0,2); // gameMode と sasonID は削除
+        console.log(fightLog);
+        fightLogWithKD[urls[z]] = fightLog; // url ごとにオブジェクト化
       } else {
         console.log("Cannot got data from Puppeteer! => " + puppdata);
       }

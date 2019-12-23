@@ -15,7 +15,8 @@ import {
   LooksTwo,
   Looks3,
   FiberManualRecord,
-  Close
+  Close,
+  EmojiEmotions
 } from '@material-ui/icons';
 
 const StyledTableHead = styled(TableHead)`
@@ -29,7 +30,7 @@ const StyledTableRow = styled(TableRow)`
   position: relative;
   ul {
     visibility: hidden;
-    transform: translateX(-5px);
+    transform: translateX(-2px);
     opacity: 0;
     transition-timing-function: ease-in-out;
     transition-duration: .35s;
@@ -62,6 +63,7 @@ const StyledTableCellB = styled(TableCell)`
 
 const FightLogList = (data: any) => {
   const listData: any = Object.values(data)[0];
+  const myAvgKD =  localStorage.getItem('_pubgTotalAvgKD')!;
   // console.log(listData);
   if (!listData) { // データないときはなし
     return null;
@@ -73,8 +75,8 @@ const FightLogList = (data: any) => {
         backgroundColor: 'rgba(0, 0, 0, .8)', 
         boxShadow: 'rgba(163, 0, 255, 0.28) 5px 5px 0px 0px', 
         fontSize: '11px', 
-        padding: '6px 10px 6px', 
-        left: '80px', 
+        padding: '6px 12px 6px 8px', 
+        left: '115px', 
         marginTop: '-24px',
         zIndex: 9999,
       }}>
@@ -82,9 +84,15 @@ const FightLogList = (data: any) => {
       <li key={x} style={{listStyle: 'none'}}>
         {item.win ?
           (
-            <span style={{color: "#20ff00"}}><FiberManualRecord style={{ verticalAlign: "middle", color: "#20ff00", width: "16px", height: "16px", marginRight: "7px"}} />{item.win}</span>
+            <span style={{color: "rgb(36, 236, 96)"}}><FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "7px"}} />{item.win}
+              <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd ? item.kd : "NaN"})</span>
+              {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
+            </span>
           ) : (
-            <span style={{color: "rgb(255, 0, 24)"}}><Close style={{ verticalAlign: "middle", color: "rgb(255, 0, 24)", width: "16px", height: "16px", marginRight: "7px"}} />{item.lose}</span>
+            <span style={{color: "rgb(255, 99, 113)"}}><Close style={{ verticalAlign: "bottom", color: "rgb(255, 99, 113)", width: "16px", height: "16px", marginRight: "7px"}} />{item.lose}
+              <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd ? item.kd : "NaN"})</span>
+              {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
+            </span>
           )
         }
       </li>
@@ -132,11 +140,6 @@ const StatsDataTable = ({
     return row.damageDealt;
   });
   const avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
-
-  // fightLog
-  // const fightLog = filteredData.map((row: any) => {
-  //   return row.fightLog;
-  // });
 
   const playedDate = tableData.playedDate;
   const statsData  = filteredData;
