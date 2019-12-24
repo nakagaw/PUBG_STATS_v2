@@ -50,7 +50,7 @@ export class FightLog {
             } else {
               console.log(userID);
               const pubgApi = new PubgAPI();
-              fightLog[q]["kd"] = await pubgApi.getSeasonStats(userID, gameMode, seasonID);
+              fightLog[q]["kd"] = await pubgApi.getSeasonKD(userID, gameMode, seasonID);
             }
           }
         }

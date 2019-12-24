@@ -84,22 +84,22 @@ const FightLogList = (data: any) => {
       <li key={x} style={{listStyle: 'none'}}>
         {item.win ?
           (
-            <span style={{color: "rgb(36, 236, 96)"}}>
-              <FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "7px"}} />
-              {item.win}
+            <span>
+              <FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "4px"}} />
+              <a href={'https://pubg.op.gg/user/' + item.win} target="_blank" rel="noopener noreferrer" style={{color: "rgb(36, 236, 96)"}}>{item.win}</a>
               {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
               {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
             </span>
           ) : (
-            <span style={{color: "rgb(255, 99, 113)"}}>
-              <Close style={{ verticalAlign: "bottom", color: "rgb(255, 99, 113)", width: "16px", height: "16px", marginRight: "7px"}} />
+            <span>
+              <Close style={{ verticalAlign: "bottom", color: "rgb(255, 99, 113)", width: "16px", height: "16px", marginRight: "4px"}} />
               {(() => {
                 if (item.lose === "SelfKill") {
                   return "自死"
                 } else if (item.lose === "BlueZone") {
                   return "安置死"
                 } else {
-                  return item.lose
+                  return <a href={'https://pubg.op.gg/user/' + item.lose} target="_blank" rel="noopener noreferrer" style={{color: "rgb(255, 99, 113)"}}>item.lose</a>
                 }
               })()}
               {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}

@@ -43,6 +43,7 @@ export class PubgAPI {
   // Players API から match id を取り出して、Matchs API 叩いて各種データを取り出す
   // ============================================
   public getMatches = async (userID: string, playingStartTime?: Date, urumuchiState?: boolean) => {
+
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
     // console.log(playerDataGetResult);
     let playerMatchData = playerDataGetResult!.data.data[0].relationships.matches.data;
@@ -168,12 +169,13 @@ export class PubgAPI {
 
   // Players API から accountid を取り出して、season API 叩いて現シーズンのKDデータを取り出す
   // ============================================
-  public getSeasonStats = async (userID: string, gameMode: string, seasonID: string ) => {
+  public getSeasonKD = async (userID: string, gameMode: string, seasonID: string ) => {
     try {
       // アカウントID取ってくるやつ
       // 短時間に複数回（1分間に10回以上叩くと 429 error で失敗する）
       let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
       let accountID = playerDataGetResult!.data.data[0].id;
+
       // console.log(accountID);
       // 現シーズンスタッツ取る
       let currentSeasonStats = await this.getAPI('/shards/steam/players/' + accountID + '/seasons/' + seasonID);
