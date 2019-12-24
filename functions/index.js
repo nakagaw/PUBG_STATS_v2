@@ -1,81 +1,123 @@
 const functions = require('firebase-functions');
 const express = require('express')
 const cors = require('cors');
-const puppeteer = require('puppeteer');
+const pptrFirefox = require('puppeteer-firefox');
 
 const app = express()
 
 // Automatically allow cross-origin requests
 app.use(cors({ origin: true }));
 
+const userID = "UG_boy";
+
+app.get('/get/:telemetryURL', async (req, res, next) => {
+  try {
+    const url = req.params.telemetryURL;
+    console.log(url)
+    
+    const browser = await pptrFirefox.launch();
+    const page = await browser.newPage();
+    console.log(". loading");
+    await page.goto(
+      url,
+      {
+        waitUntil: 'load',
+        timeout: 0, // JSONがでかすぎるからタイムアウトなし
+        // それでも NetworkError でるときブラウザのタイムアウトも注意 => https://scrapbox.io/kadoyau/%E3%83%96%E3%83%A9%E3%82%A6%E3%82%B6%E3%81%AE%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E3%82%BF%E3%82%A4%E3%83%A0%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AF%E4%BD%95%E7%A7%92%EF%BC%9F
+      }
+    );
+    console.log(".. will get content");
+
+    // 開いたページの pre タグ内にあるJSONテキストを取得
+    const data = await page.$eval('pre', selector => {
+      return JSON.parse(selector.textContent);
+    })
+    console.log("... got content");
+
+    let fightLog = {};
+    fightLog[req.params.telemetryURL] = Object.values(data).filter((item) => {
+      if(item.killer) {
+        // 倒した相手
+        if (item.killer.name === userID) {
+          if (item.victim !== undefined) {
+            // console.log(item);
+            return true
+          }
+        }
+      }
+      if (item.victim) {
+        // 倒された相手
+        if (item.victim.name === userID) {
+          if (item.killer !== undefined) {
+            // if (item.killer == null) { // Bluezoneのとき
+            //   console.log("LOSE => BlueZone");
+            // } else {
+            //   console.log(item);
+            // }
+            return true
+          }
+        }
+      }
+      // console.log("該当なし");
+      return false
+    })
+    .map((item) => { // さらに name を抽出する
+      let namelist = {};
+      if(item.killer) {
+        // 倒した相手
+        if (item.killer.name === userID) {
+          if (item.victim !== undefined) {
+            if (item.victim.name === userID) {
+              // console.log("LOSE => SelfKill...");
+              namelist["lose"] = "SelfKill";
+              return namelist;
+            } else {
+              // console.log("WIN  => " + item.victim.name);
+              namelist["win"] = item.victim.name;
+              return namelist;
+            }
+          }
+        }
+      }
+      if (item.victim) {
+        // 倒された相手
+        if (item.victim.name === userID) {
+          if (item.killer !== undefined) {
+            if (item.killer == null) {
+              // console.log("LOSE => BlueZone");
+              namelist["lose"] = "BlueZone";
+              return namelist;
+            } else {
+              // console.log("LOSE => " + item.killer.name);
+              namelist["lose"] = item.killer.name;
+              return namelist;
+            }
+          }
+        }
+        return null
+      }
+    });
+
+    // JSON 冒頭の概要からシーズンとゲームモード取る
+    const matchId = Object.values(data)[0].MatchId.split('.');
+    const seasonID = { seasonID : 'division.' + matchId[1] + '.' + matchId[2] + '.' + matchId[3] };
+    const gameMode = { gameMode : matchId[5] };
+    fightLog[req.params.telemetryURL].unshift(seasonID);
+    fightLog[req.params.telemetryURL].unshift(gameMode);
+    console.log(fightLog);
+
+    res.send(fightLog);
+    await browser.close();
+    console.log(".... Successful! Close browser");
+  } catch (error) {
+    console.log("Express error => "+ error);
+    next(error);
+  }
+})
+
 // test
 app.get('/test/:text', (req, res) => {
   res.status(200).send('test => ' + req.params.text)
-})
-
-app.get('/pupp/:text', async (req, res) => {
-  // URLじゃなかったときのエラーハンドリング必要
-  const browser = await puppeteer.launch({args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '-–disable-dev-shm-usage',
-    '--disable-gpu',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process'
-  ]});
-  const page = await browser.newPage();
-  await page.goto('https://www.google.com/');
-  res.status(200).send('test OK => ' + req.params.text)
-  await browser.close();
-})
-
-app.get('/get/:url', async (req, res) => {
-  const url = decodeURIComponent(req.params.url);
-  console.log(url)
-
-  // URLじゃなかったときのエラーハンドリング必要
-  const browser = await puppeteer.launch({headless: true}); // false にするとChrome起動して使える
-  const page = await browser.newPage();
-  await page.goto(
-    url,
-    {timeout: 900000} // JSONがでかすぎるからタイムアウト伸ばさないと止まる。。
-  );
-  // 開いたページの pre タグ内にあるJSONテキストを取得
-  const obj = await page.$eval('pre', selector => {
-    return selector.textContent
-  })
-  const data = JSON.parse(obj);
-
-  let fightLog = Object.values(data).filter((item, index) => {
-    if(item.killer) {
-      // 倒した相手
-      if (item.killer.name === "UG_boy") {
-        if (item.victim !== undefined) {
-          console.log("WIN  => " + item.victim.name);
-          return true
-        }
-      }
-    }
-    if (item.victim) {
-      // 倒された相手
-      if (item.victim.name === "UG_boy") {
-        if (item.killer !== undefined) {
-          if (item.killer == null) { // Bluezoneのとき
-            console.log("LOSE => BlueZone");
-          } else {
-            console.log("LOSE => " + item.killer.name);
-          }
-          return true
-        }
-      }
-    }
-    // console.log("該当なし");
-    return false
-  });
-
-  res.status(202).send(fightLog);
-  await browser.close();
 })
 
 // https://firebase.google.com/docs/functions/manage-functions?hl=ja#set_runtime_options
