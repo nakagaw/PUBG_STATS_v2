@@ -19,7 +19,7 @@ export class FightLog {
     } catch (error) {
       if (!error.response) {
         // network error
-        console.log("Puppeteerをまててない =>" + error);
+        console.log("Puppeteer server 止まってるっぽい =>" + error);
       } else {
         console.error('Puppeteer ERROR!! =>' + error);
       }

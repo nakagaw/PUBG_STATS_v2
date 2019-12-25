@@ -99,7 +99,7 @@ const FightLogList = (data: any) => {
                 } else if (item.lose === "BlueZone") {
                   return "安置死"
                 } else {
-                  return <a href={'https://pubg.op.gg/user/' + item.lose} target="_blank" rel="noopener noreferrer" style={{color: "rgb(255, 99, 113)"}}>item.lose</a>
+                  return <a href={'https://pubg.op.gg/user/' + item.lose} target="_blank" rel="noopener noreferrer" style={{color: "rgb(255, 99, 113)"}}>{item.lose}</a>
                 }
               })()}
               {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}

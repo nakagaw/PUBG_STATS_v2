@@ -167,26 +167,43 @@ export class PubgAPI {
     return [statsDataList, telemetryList];
   }
 
+  // CountDown Timer For 429 error
+  public delay = async (count:number) => {
+    return await new Promise(resolve => {
+      let counter:number = count;
+      let intervalId = setInterval(() => {
+        counter = counter - 1;
+        console.log(counter)
+        if(counter === 0) {
+          clearInterval(intervalId)
+          return resolve()
+        }
+      }, 1000)
+    })
+  }
+
   // Players API から accountid を取り出して、season API 叩いて現シーズンのKDデータを取り出す
   // ============================================
   public getSeasonKD = async (userID: string, gameMode: string, seasonID: string ) => {
+
+    // 1分間に10回以上叩くと 429 error で失敗するので6秒感覚でとる
+    await this.delay(7);
+
     try {
       // アカウントID取ってくるやつ
-      // 短時間に複数回（1分間に10回以上叩くと 429 error で失敗する）
       let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
       let accountID = playerDataGetResult!.data.data[0].id;
-
       // console.log(accountID);
-      // 現シーズンスタッツ取る
+
+      // 現シーズンスタッツ取ってKD返す
       let currentSeasonStats = await this.getAPI('/shards/steam/players/' + accountID + '/seasons/' + seasonID);
       // console.log(currentSeasonStats);
       let kd = (currentSeasonStats!.data.data.attributes.gameModeStats[gameMode]['kills'] / currentSeasonStats!.data.data.attributes.gameModeStats[gameMode]['losses']).toFixed(2);
-      console.log(userID +  ' => ' + kd);
+      // console.log(userID +  ' => ' + kd);
       return kd;
-
      } catch( reason ) {
       console.log("getSeasonStats => " +  reason);
     }
   }
-}
 
+}
