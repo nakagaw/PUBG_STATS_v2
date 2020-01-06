@@ -16,7 +16,7 @@ import {
   AppBar,
   Toolbar,
   Container,
-  Typography,
+  // Typography,
   FormControl,
   TextField,
   IconButton,
@@ -263,6 +263,7 @@ export default class App extends React.Component<{}, IState> {
       if(_todayStatsData.data.length === statsDataListWithFightLog.data.length) { // 同じ配列数か存在チェックして同じだったら上書き
         console.log('◎ Saved to _pubgApiStatsData after adding FightLog');
         localStorage.setItem('_pubgApiStatsData', JSON.stringify(statsDataListWithFightLog,undefined,1));
+        this.createStatsTable(); //データ再描画
       } else {
         console.log('△ Different data : _pubgApiStatsData and _pubgFightLog');
       }
@@ -281,13 +282,10 @@ export default class App extends React.Component<{}, IState> {
     return (
       <React.Fragment>
         <Loading state={this.state.getApiDataLoading} type="linear" />
-        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "#222" }}>
+        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "rgb(64, 64, 64)" }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
-            <Toolbar>
+            <Toolbar style={{ paddingRight: 0 }}>
               <Navbar userID={this.state.userID} />
-              <Typography variant="h6" component="h1" noWrap>
-                {/* TODAY's STATS */}
-              </Typography>
             </Toolbar>
             <Grid item>
               <FormControl style={{ width: '130px' }}>

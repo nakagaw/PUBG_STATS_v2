@@ -71,7 +71,7 @@ export default class Chart extends React.Component<{}, IState> {
   render() {
     return (
       <React.Fragment>
-        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px' }}>
+        <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "rgb(64, 64, 64)" }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
               <Navbar userID={this.state.userID} />

@@ -187,7 +187,7 @@ export class PubgAPI {
   public getSeasonKD = async (userID: string, gameMode: string, seasonID: string ) => {
 
     // 1分間に10回以上叩くと 429 error で失敗するので6秒感覚でとる
-    await this.delay(7);
+    await this.delay(8);
 
     try {
       // アカウントID取ってくるやつ
