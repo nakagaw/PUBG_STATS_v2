@@ -2,7 +2,7 @@ You can get today's kills and Average damages from PUBG API.
 
 <img src="./readme/image1.png" style="width: 50%">
 
-Upgraded points from ver.1 are,
+Upgraded points from <a href="https://github.com/nakagaw/PUBG_STATS_v1" target="_blank">ver.1</a> are,
 1. Made by React & TypeScript with Material UI
 2. Hosted by [Firebase Hosting](https://firebase.google.com/products/hosting/), and You can backup to [Firebase Realtime Database}(https://firebase.google.com/products/realtime-database/)
 3. You can see Chart by [Recharts](http://recharts.org/)
