@@ -1,5 +1,7 @@
 You can get today's kills and Average damages from PUBG API.
 
+<img src="./readme/image1.png" style="width: 50%">
+
 Upgraded points from ver.1 are,
 1. Made by React & TypeScript with Material UI
 2. Hosted by [Firebase Hosting](https://firebase.google.com/products/hosting/), and You can backup to [Firebase Realtime Database}(https://firebase.google.com/products/realtime-database/)
@@ -37,3 +39,17 @@ $ yarn start
 Please check this URL.
 http://localhost:3000
 
+
+# 4. After fight, If you want enemies K/D data
+
+Type this commnd to your terminal.
+```
+$ node src/puppeteerApiServer.js
+```
+And push "Get telemenly data" icon button.
+
+<img src="./readme/image2.png" style="width: 50%">
+
+It takes time, because PUBG API has request limit 10 Requests Per Minute.
+
+<img src="./readme/image3.png" style="width: 50%">

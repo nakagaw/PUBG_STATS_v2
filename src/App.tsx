@@ -31,6 +31,7 @@ import {
 import {
   SportsKabaddi
 } from '@material-ui/icons';
+
 // ============================================
 // ============================================
 
@@ -267,6 +268,7 @@ export default class App extends React.Component<{}, IState> {
       } else {
         console.log('△ Different data : _pubgApiStatsData and _pubgFightLog');
       }
+      this.createStatsTable(); //データ再描画
       this.setState({getApiDataLoading: false});
     }, (reason: any) => {
       console.log("Puppeteer はいけてるっぽいけど TelemetryData ないよー => " +  reason);
@@ -285,7 +287,7 @@ export default class App extends React.Component<{}, IState> {
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "rgb(64, 64, 64)" }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar style={{ paddingRight: 0 }}>
-              <Navbar userID={this.state.userID} />
+              <Navbar userID={this.state.userID} tableUpdate={this.createStatsTable} />
             </Toolbar>
             <Grid item>
               <FormControl style={{ width: '130px' }}>
@@ -350,7 +352,7 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{ flexGrow: 1}}>
             </Grid>
             <Grid item>
-              <Tooltip title="Get テレメンタリー(beta)">
+              <Tooltip title="Get telemenly data(beta)">
                 <IconButton aria-controls="Get Enemies Data" onClick={this.getEnemiesData} disabled={this.state.apiStatsData.length === 0}>
                   <SportsKabaddi color={this.state.apiStatsData.length === 0 ? 'disabled' : 'secondary'} />
                 </IconButton>
@@ -393,7 +395,7 @@ export default class App extends React.Component<{}, IState> {
             <Grid item style={{overflowY: 'auto', padding: 0, flexGrow: 1}}>
               <Grid container wrap="nowrap">
                 {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
-                  <Grid item key={i} style={{marginRight: '1px'}}>
+                  <Grid item key={i} style={{marginRight: '1px', position: 'relative'}}>
                     <StatsDataTable tableData={this.state.stockApiData[value]} filterGameMode={this.state.filterGameMode} />
                   </Grid>
                 ))}

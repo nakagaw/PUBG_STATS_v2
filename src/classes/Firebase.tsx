@@ -21,7 +21,6 @@ export class Firebase {
           localStorage.setItem(dbStatsDataKey[i], dbStatsDataValueJSON);
         }
         console.log('★ All localStorage data overwritten from firebaseDB!');
-        // this.createStatsTable(); //データ再描画
       } else {
         console.log('▲ Error => Not found user on firebaseDB...');
       }

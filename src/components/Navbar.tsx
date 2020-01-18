@@ -105,11 +105,13 @@ const StyledNavLink= styled(NavLink)`
 
 interface IProps {
   userID?: string;
+  tableUpdate: () => void;
   // getApiDataLoading: boolean;
 }
 
 const Navbar = ({
   userID,
+  tableUpdate,
   // getApiDataLoading,
 }: IProps) => {
   const classes = useStyles();
@@ -124,19 +126,18 @@ const Navbar = ({
 
   // firebaseDB からとってきたデータをローカルストレージに上書きでぶっこむ
   const getDBdatas = (event: any) => {
-    // this.setState({getApiDataLoading: true});
     const firebase = new Firebase();
     firebase.getData(userID!);
-    // this.setState({getApiDataLoading: false});
+    setTimeout(() => { // promise 化したい。。
+      tableUpdate(); //データ再描画
+    }, 1000)
   }
 
   // userID でテーブル作成して firebaseDB に書き込み
   const setDBdatas = (event: any) => {
-    // this.setState({getApiDataLoading: true});
     const allStatsData = new LocalStorageControls().createAllStatsData();
     const firebase = new Firebase();
     firebase.setData(userID!, allStatsData);
-    // this.setState({getApiDataLoading: false});
   }
 
   return(
@@ -176,16 +177,38 @@ const Navbar = ({
           </ListItem>
         </List>
         <Divider />
-        <List disablePadding>
-          <ListItem button onClick={setDBdatas}>
-            <ListItemIcon><CloudUpload /></ListItemIcon>
-            <ListItemText primary="Backup Data"/>
-          </ListItem>
-          <ListItem button onClick={getDBdatas}>
-            <ListItemIcon><CloudDownload /></ListItemIcon>
-            <ListItemText primary="Get DB Data"/>
-          </ListItem>
-        </List>
+        {(() => {
+          if (process.env.REACT_APP_FB_API_KEY !== undefined) {
+            return (
+              <List disablePadding>
+                <ListItem button onClick={setDBdatas}>
+                  <ListItemIcon><CloudUpload /></ListItemIcon>
+                  <ListItemText primary="Backup Data"/>
+                </ListItem>
+                <ListItem button onClick={getDBdatas}>
+                  <ListItemIcon><CloudDownload /></ListItemIcon>
+                  <ListItemText primary="Get DB Data"/>
+                </ListItem>
+              </List>
+            )
+          } else {
+            return (
+              <List disablePadding>
+                <ListItem button disabled>
+                  <ListItemIcon><CloudUpload /></ListItemIcon>
+                  <ListItemText primary="Backup Data"/>
+                </ListItem>
+                <ListItem button disabled>
+                  <ListItemIcon><CloudDownload /></ListItemIcon>
+                  <ListItemText primary="Get DB Data"/>
+                </ListItem>
+                <ListItem>
+                  <p style={{fontSize: "11px", backgroundColor: "rgba(255, 255, 255, 0.1)", padding: "10px 12px", margin: 0, borderRadius: "4px"}}>If you want Backup for the data, Please get Firebase account then setting to the app <a href="https://github.com/nakagaw/pubg-app#2-1-using-firebase" target="_blank" style={{color: "white"}}>detail here</a>.</p>
+                </ListItem>
+              </List>
+            )
+          }
+        })()}
       </Drawer>
     </React.Fragment>
   )

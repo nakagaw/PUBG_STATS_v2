@@ -16,7 +16,8 @@ import {
   Looks3,
   FiberManualRecord,
   Close,
-  EmojiEmotions
+  ArrowDownward,
+  ArrowUpward
 } from '@material-ui/icons';
 
 const StyledTableHead = styled(TableHead)`
@@ -30,16 +31,14 @@ const StyledTableRow = styled(TableRow)`
   position: relative;
   ul {
     visibility: hidden;
-    transform: translateX(-2px);
     opacity: 0;
     transition-timing-function: ease-in-out;
-    transition-duration: .35s;
+    transition-duration: .15s;
     transition-property: transform,visibility,opacity;
   }
   &:hover {
     ul {
       visibility: visible;
-      transform: translateX(0);
       opacity: 1;
     }
     background-color: #2b272f;
@@ -88,7 +87,7 @@ const FightLogList = (data: any) => {
               <FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "4px"}} />
               <a href={'https://pubg.op.gg/user/' + item.win} target="_blank" rel="noopener noreferrer" style={{color: "rgb(36, 236, 96)"}}>{item.win}</a>
               {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
-              {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
+              {myAvgKD < item.kd ? <ArrowUpward style={{ verticalAlign: "text-bottom", color: "rgb(255, 99, 113)", width: "14px", height: "14px", marginLeft: "3px"}} /> : <ArrowDownward style={{ verticalAlign: "text-bottom", color: "rgb(36, 236, 96)", width: "14px", height: "14px", marginLeft: "3px"}} /> }
             </span>
           ) : (
             <span>
@@ -103,7 +102,7 @@ const FightLogList = (data: any) => {
                 }
               })()}
               {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
-              {myAvgKD < item.kd ? <EmojiEmotions style={{ verticalAlign: "text-bottom", color: "rgb(255, 165, 51)", width: "14px", height: "14px", marginLeft: "3px"}} /> : null }
+              {myAvgKD < item.kd ? <ArrowUpward style={{ verticalAlign: "text-bottom", color: "rgb(255, 99, 113)", width: "14px", height: "14px", marginLeft: "3px"}} /> : <ArrowDownward style={{ verticalAlign: "text-bottom", color: "rgb(36, 236, 96)", width: "14px", height: "14px", marginLeft: "3px"}} /> }
             </span>
           )
         }
@@ -147,6 +146,33 @@ const StatsDataTable = ({
   const killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
   const totalKills = filteredKills.reduce((current: any, items: any) => current+=items, 0);
 
+  // killers KD rate
+  const filteredKillersKD = filteredData.map((row: any) => { // kdをもってるkillerだけのリストに
+    if(row.fightLog !== undefined) {
+      let killer = row.fightLog.filter((item:any) => {
+        if(item.lose) {
+          if(item.kd) {
+            return true;
+          }
+        }
+        return false;
+      });
+      return killer;
+    }
+    return null;
+  }).map((item: any) => { // さらに KD を抽出する
+    if(item) {
+      if(item[0]) {
+        if(item[0].kd && item[0].kd !== "Infinity") {
+          // console.log(item[0].kd);
+          return item[0].kd;
+        }
+      }
+    }
+    return null;
+  }).map(Number);
+  const killersKD = (filteredKillersKD.reduce((current: any, items: any) => current+=items, 0)/filteredKillersKD.length).toFixed(2);
+
   // avg damages
   const filteredDamageDealt = filteredData.map((row: any) => {
     return row.damageDealt;
@@ -155,6 +181,8 @@ const StatsDataTable = ({
 
   const playedDate = tableData.playedDate;
   const statsData  = filteredData;
+
+
 
   return (
     <Table size="small">
@@ -165,7 +193,15 @@ const StatsDataTable = ({
       </StyledTableHead>
       <TableBody>
         <TableRow>
-          <StyledTableCellA align="center" component="th" colSpan={2}>{killDeath}</StyledTableCellA>
+          <StyledTableCellA align="center" component="th" colSpan={2}>
+          {killDeath} <span style={{ fontSize: "11px"}}>(敵KD: {(() => {
+            if (killersKD === "0.00") {
+              return <span style={{ fontStyle: "italic"}}>NaN</span>
+            } else {
+              return <span style={{ fontStyle: "italic"}}>{killersKD}</span>
+            }
+          })()})</span>
+          </StyledTableCellA>
         </TableRow>
         <TableRow>
           <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} (<span style={{ fontStyle: "italic"}}>{avgDamage}</span>)</StyledTableCellB>

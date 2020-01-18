@@ -74,7 +74,7 @@ export default class Chart extends React.Component<{}, IState> {
         <AppBar position="sticky" style={{ padding: '4px 20px 6px', marginBottom: '15px', backgroundColor: "rgb(64, 64, 64)" }}>
           <Grid container alignItems="center" wrap="nowrap" spacing={4}>
             <Toolbar>
-              <Navbar userID={this.state.userID} />
+              <Navbar userID={this.state.userID} tableUpdate={this.createStatsTable} />
               <Typography variant="h6" component="h1" noWrap>
               Chart
               </Typography>
