@@ -30,7 +30,7 @@ const Loading = ({
         <React.Fragment>
         {state &&
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', position: 'fixed', top: 0, left: 0 }}>
-            <CircularProgress size={120} thickness={1} />
+            <CircularProgress size={120} thickness={2} />
           </div>
         }
         </React.Fragment>

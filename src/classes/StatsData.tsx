@@ -3,13 +3,14 @@ import { LocalStorageControls } from './LocalStorageControls';
 export class StatsData {
 
   // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
-  public create = (season: string) => {
+  public create = async (season: string) => {
     const statsTableKeys: any = new LocalStorageControls().summarizeStatsDataKeys();
     let statsTableData: any = {};
 
     // シーズンフィルタ
     const seasonDate: any = {
-      "current-season" : ["2019/10/22","2020/01/30"],
+      "current-season" : ["2020/01/21","2020/03/21"],
+      "season-5" : ["2019/10/22","2020/01/21"],
       "season-4" : ["2019/07/24","2019/10/22"]
     }
     for (let i = 0; i < statsTableKeys.length; i++) {

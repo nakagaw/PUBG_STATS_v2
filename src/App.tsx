@@ -32,6 +32,7 @@ import {
   SportsKabaddi
 } from '@material-ui/icons';
 
+
 // ============================================
 // ============================================
 
@@ -205,14 +206,15 @@ export default class App extends React.Component<{}, IState> {
   // ストックした "_pubgStatsData__*" データから画面表示用のデータ作るやつ
   public createStatsTable = (event?: any) => {
     this.setState({createTableLoading: true});
-    try {
-      const statsTableData = new StatsData().create(this.state.filterSeason);
-      this.setState({stockApiData: statsTableData});
+    const statsTableData = new StatsData();
+    statsTableData.create(this.state.filterSeason)
+    .then((value: any) => {
+      this.setState({stockApiData: value});
       this.setState({createTableLoading: false});
-    } catch( reason ) {
+    }, (reason: any) => {
       console.log("statsTableData ないよー => " +  reason);
-      this.setState({createTableLoading: false});
-    }
+      this.setState({getApiDataLoading: false});
+    });
   }
 
   // フィルターのステート管理
