@@ -46,12 +46,13 @@ export default class Chart extends React.Component<{}, IState> {
 
   // ストックした "_pubgStatsData__*" データからテーブルデータ作るやつ
   public createStatsTable = () => {
-    try {
-      const statsTableData = new StatsData().create(this.state.filterSeason);
-      this.setState({stockApiData: statsTableData});
-    } catch( reason ) {
+    const statsTableData = new StatsData();
+    statsTableData.create(this.state.filterSeason)
+    .then((value: any) => {
+      this.setState({stockApiData: value});
+    }, (reason: any) => {
       console.log("statsTableData ないよー => " +  reason);
-    }
+    });
   }
 
   // フィルターのステート管理
@@ -65,7 +66,7 @@ export default class Chart extends React.Component<{}, IState> {
     localStorage.setItem('_pubgFilterSeason', value);
     setTimeout(() => { // アニメーションのせい？か、これがないと setState できてない。promise 化したほうが良さそう
       this.createStatsTable(); //データ再描画
-    }, 10)
+    }, 100)
   }
 
   render() {

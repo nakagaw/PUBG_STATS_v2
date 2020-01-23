@@ -7,7 +7,7 @@ export class StatsData {
     const statsTableKeys: any = new LocalStorageControls().summarizeStatsDataKeys();
     let statsTableData: any = {};
 
-    // シーズンフィルタ
+    // シーズンフィルタ（手動追加）
     const seasonDate: any = {
       "current-season" : ["2020/01/21","2020/03/21"],
       "season-5" : ["2019/10/22","2020/01/21"],

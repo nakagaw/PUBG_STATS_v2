@@ -55,7 +55,7 @@ const StatsDataChart = ({
   filterGameMode,
 }: IProps) => {
 
-  // console.log(Object.values(chartData));
+  console.log(chartData);
 
   const statsData: any = [];
   let avgKD: number = 0;
