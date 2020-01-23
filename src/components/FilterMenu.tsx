@@ -83,10 +83,16 @@ const FilterMenu = ({
           />
         </RadioGroup>
         <Divider variant="middle" />
+        {/* シーズン手動追加 */}
         <RadioGroup aria-label="Season filter" name="filterSeasonGroup" value={initSeasonValue} onChange={filterSeasonChangeHandler}
         style={{padding: "10px 15px"}}>
           <FormControlLabel
             value="current-season"
+            control={<Radio />}
+            label="Season 6"
+          />
+          <FormControlLabel
+            value="season-5"
             control={<Radio />}
             label="Season 5"
           />

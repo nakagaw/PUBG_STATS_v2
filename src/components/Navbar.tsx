@@ -203,7 +203,7 @@ const Navbar = ({
                   <ListItemText primary="Get DB Data"/>
                 </ListItem>
                 <ListItem>
-                  <p style={{fontSize: "11px", backgroundColor: "rgba(255, 255, 255, 0.1)", padding: "10px 12px", margin: 0, borderRadius: "4px"}}>If you want Backup for the data, Please get Firebase account then setting to the app <a href="https://github.com/nakagaw/pubg-app#2-1-using-firebase" target="_blank" style={{color: "white"}}>detail here</a>.</p>
+                  <p style={{fontSize: "11px", backgroundColor: "rgba(255, 255, 255, 0.1)", padding: "10px 12px", margin: 0, borderRadius: "4px"}}>If you want Backup for the data, Please get Firebase account then setting to the app <a href="https://github.com/nakagaw/pubg-app#2-1-using-firebase" target="_blank" style={{color: "white"}} rel="noopener noreferrer">detail here</a>.</p>
                 </ListItem>
               </List>
             )
