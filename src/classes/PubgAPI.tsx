@@ -76,7 +76,7 @@ export class PubgAPI {
           // console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
           // console.log("startTime    => " + startTime)
           // console.log("APIdataTime => " + matcheDataGetResult.data.data.attributes.createdAt)
-
+          console.log();
           if (urumuchiState === true) { // ウルムチ設定のときはマッチ時間も +1h して日本時間にして差分計算
             let shift = new Date(matchTime.getTime()+9*60*60*1000).toISOString().split('.')[0];
             console.log("matchTime +1h => " + shift)
@@ -86,8 +86,10 @@ export class PubgAPI {
             var diffMS = Math.floor(diffTime / (1000));
             // console.log(diffMS);
             if(diffMS < 0){
-              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
-                matcheList.push(matcheDataGetResult.data);
+              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") {//トレモ除く
+                if (matcheDataGetResult.data.data.attributes.gameMode !== "tdm") { //TDM 除く
+                  matcheList.push(matcheDataGetResult.data);
+                }
               }
             } else {
               console.log("該当マッチなし");
@@ -98,8 +100,10 @@ export class PubgAPI {
             var diffMS2 = Math.floor(diffTime / (1000));
             // console.log(diffMS2);
             if(diffMS2 < 0){
-              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
-                matcheList.push(matcheDataGetResult.data);
+              if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") {//トレモ除く
+                if (matcheDataGetResult.data.data.attributes.gameMode !== "tdm") { //TDM 除く
+                  matcheList.push(matcheDataGetResult.data);
+                }
               }
             } else {
               console.log("該当マッチなし");

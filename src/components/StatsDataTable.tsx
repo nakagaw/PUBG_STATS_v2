@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import { keyframes } from 'styled-components'
 
 import {
   Table,
@@ -26,6 +27,19 @@ const StyledTableHead = styled(TableHead)`
   border-top-right-radius: 4px;
 `;
 
+const showTable = keyframes`
+  from {
+    opacity: .2;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+const StyledTable = styled(Table)`
+  animation: ${showTable} .25s linear;
+`;
+
 const StyledTableRow = styled(TableRow)`
   cursor: crosshair;
   position: relative;
@@ -48,16 +62,19 @@ const StyledTableRow = styled(TableRow)`
 const StyledTableCell = styled(TableCell)`
   padding: 1px 6px 1px 6px !important;
   font-size: 12px;
+  white-space: nowrap;
 `;
 const StyledTableCellA = styled(TableCell)`
   padding: 4px 8px 4px 8px !important;
   background-color: #79ff79;
   color: black !important;
+  white-space: nowrap;
 `;
 const StyledTableCellB = styled(TableCell)`
   padding: 4px 8px 4px 8px !important;
   background-color: #ac77dc;
   color: black !important;
+  white-space: nowrap;
 `;
 
 const FightLogList = (data: any) => {
@@ -86,7 +103,7 @@ const FightLogList = (data: any) => {
             <span>
               <FiberManualRecord style={{ verticalAlign: "bottom", color: "rgb(36, 236, 96)", width: "16px", height: "16px", marginRight: "4px"}} />
               <a href={'https://pubg.op.gg/user/' + item.win} target="_blank" rel="noopener noreferrer" style={{color: "rgb(36, 236, 96)"}}>{item.win}</a>
-              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
+              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(K/D {item.kd})</span> : null}
               {myAvgKD < item.kd ? <ArrowUpward style={{ verticalAlign: "text-bottom", color: "rgb(255, 99, 113)", width: "14px", height: "14px", marginLeft: "3px"}} /> : <ArrowDownward style={{ verticalAlign: "text-bottom", color: "rgb(36, 236, 96)", width: "14px", height: "14px", marginLeft: "3px"}} /> }
             </span>
           ) : (
@@ -101,7 +118,7 @@ const FightLogList = (data: any) => {
                   return <a href={'https://pubg.op.gg/user/' + item.lose} target="_blank" rel="noopener noreferrer" style={{color: "rgb(255, 99, 113)"}}>{item.lose}</a>
                 }
               })()}
-              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(KD: {item.kd})</span> : null}
+              {item.kd ? <span style={{ marginLeft: "5px", color: "#808080"}}>(K/D {item.kd})</span> : null}
               {myAvgKD < item.kd ? <ArrowUpward style={{ verticalAlign: "text-bottom", color: "rgb(255, 99, 113)", width: "14px", height: "14px", marginLeft: "3px"}} /> : <ArrowDownward style={{ verticalAlign: "text-bottom", color: "rgb(36, 236, 96)", width: "14px", height: "14px", marginLeft: "3px"}} /> }
             </span>
           )
@@ -182,10 +199,8 @@ const StatsDataTable = ({
   const playedDate = tableData.playedDate;
   const statsData  = filteredData;
 
-
-
   return (
-    <Table size="small">
+    <StyledTable size="small">
       <StyledTableHead>
         <TableRow>
           <TableCell colSpan={2} align="center">{playedDate}</TableCell>
@@ -194,17 +209,17 @@ const StatsDataTable = ({
       <TableBody>
         <TableRow>
           <StyledTableCellA align="center" component="th" colSpan={2}>
-          {killDeath} <span style={{ fontSize: "11px"}}>(敵KD: {(() => {
+          <span style={{ fontSize: "10px"}}>K/D</span> {killDeath} <span style={{ fontSize: "10px"}}>vs {(() => {
             if (killersKD === "0.00") {
-              return <span style={{ fontStyle: "italic"}}>NaN</span>
+              return <span style={{ fontSize: "11px", fontStyle: "italic"}}>NaN</span>
             } else {
-              return <span style={{ fontStyle: "italic"}}>{killersKD}</span>
+              return <span style={{ fontSize: "11px", fontStyle: "italic"}}>{killersKD}</span>
             }
-          })()})</span>
+          })()}</span>
           </StyledTableCellA>
         </TableRow>
         <TableRow>
-          <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} (<span style={{ fontStyle: "italic"}}>{avgDamage}</span>)</StyledTableCellB>
+          <StyledTableCellB align="center" component="th" colSpan={2}>{totalKills} <span style={{ fontSize: "10px"}}>kills</span> <span style={{ fontSize: "10px", fontStyle: "italic"}}>(AvgDmg <span style={{ fontSize: "11px" }}>{avgDamage}</span>)</span></StyledTableCellB>
         </TableRow>
         {statsData.map((value: any, i: number) => (
             <StyledTableRow key={i}>
@@ -250,7 +265,7 @@ const StatsDataTable = ({
             </StyledTableRow>
         ))}
       </TableBody>
-    </Table>
+    </StyledTable>
   );
 }
 

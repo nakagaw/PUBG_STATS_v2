@@ -396,11 +396,13 @@ export default class App extends React.Component<{}, IState> {
             </Grid>
             <Grid item style={{overflowY: 'auto', padding: 0, flexGrow: 1}}>
               <Grid container wrap="nowrap">
-                {Object.keys(this.state.stockApiData).map((value: any, i: number) => (
-                  <Grid item key={i} style={{marginRight: '1px', position: 'relative'}}>
-                    <StatsDataTable tableData={this.state.stockApiData[value]} filterGameMode={this.state.filterGameMode} />
-                  </Grid>
-                ))}
+                {Object.keys(this.state.stockApiData).map((value: any, i: number) => { 
+                  return (
+                    <Grid item key={i} style={{marginRight: '1px', position: 'relative'}}>
+                      <StatsDataTable tableData={this.state.stockApiData[value]} filterGameMode={this.state.filterGameMode} />
+                    </Grid>
+                  )
+                })}
               </Grid>
               <Loading state={this.state.createTableLoading} type="circular" />
             </Grid>
