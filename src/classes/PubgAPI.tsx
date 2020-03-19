@@ -45,7 +45,7 @@ export class PubgAPI {
   public getMatches = async (userID: string, playingStartTime?: Date, urumuchiState?: boolean) => {
 
     let playerDataGetResult = await this.getAPI('/shards/steam/players?filter[playerNames]=' + userID);
-    // console.log(playerDataGetResult);
+    const acountID = playerDataGetResult!.data.data[0].id; // 3.18 updateからuserIDが空になった
     let playerMatchData = playerDataGetResult!.data.data[0].relationships.matches.data;
     // console.log(playerMatchData.length);
 
@@ -76,7 +76,6 @@ export class PubgAPI {
           // console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
           // console.log("startTime    => " + startTime)
           // console.log("APIdataTime => " + matcheDataGetResult.data.data.attributes.createdAt)
-          console.log();
           if (urumuchiState === true) { // ウルムチ設定のときはマッチ時間も +1h して日本時間にして差分計算
             let shift = new Date(matchTime.getTime()+9*60*60*1000).toISOString().split('.')[0];
             console.log("matchTime +1h => " + shift)
@@ -111,7 +110,9 @@ export class PubgAPI {
           }
         } else {
           if (matcheDataGetResult.data.data.attributes.mapName !== "Range_Main") { // トレモ除く
-            matcheList.push(matcheDataGetResult.data);
+            if (matcheDataGetResult.data.data.attributes.gameMode !== "tdm") { //TDM 除く
+              matcheList.push(matcheDataGetResult.data);
+            }
           }
         }
       }
@@ -143,7 +144,7 @@ export class PubgAPI {
        // 個人データ
       for (let z = 0; z < matchsDetaDetail.length; z++) {
         if(matchsDetaDetail[z].type === "participant") {
-          if(matchsDetaDetail[z].attributes.stats.name === userID) {
+          if(matchsDetaDetail[z].attributes.stats.playerId === acountID) {
             statsData.winPlace     = matchsDetaDetail[z].attributes.stats.winPlace;
             statsData.damageDealt  = Math.round(matchsDetaDetail[z].attributes.stats.damageDealt * 10) / 10;
             statsData.kills        = matchsDetaDetail[z].attributes.stats.kills;

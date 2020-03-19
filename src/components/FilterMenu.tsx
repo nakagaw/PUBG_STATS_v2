@@ -77,6 +77,11 @@ const FilterMenu = ({
             label="Solo FPP"
           />
           <FormControlLabel
+            value="duo-fpp"
+            control={<Radio />}
+            label="Duo FPP"
+          />
+          <FormControlLabel
             value="squad-fpp"
             control={<Radio />}
             label="Squad FPP"

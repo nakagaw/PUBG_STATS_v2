@@ -132,7 +132,7 @@ const FightLogList = (data: any) => {
 
 interface IProps {
   tableData: any;
-  filterGameMode?: 'all' | 'solo-fpp' | 'squad-fpp';
+  filterGameMode?: 'all' | 'solo-fpp' | 'duo-fpp' | 'squad-fpp';
 }
 
 const StatsDataTable = ({

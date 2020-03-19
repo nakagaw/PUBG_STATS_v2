@@ -47,7 +47,7 @@ class CustomizedAxisTick extends PureComponent<Partial<CustomizedLabelProps>> {
 
 interface IProps {
   chartData: any;
-  filterGameMode?: 'all' | 'solo-fpp' | 'squad-fpp';
+  filterGameMode?: 'all' | 'solo-fpp' | 'duo-fpp' | 'squad-fpp';
 }
 
 const StatsDataChart = ({
