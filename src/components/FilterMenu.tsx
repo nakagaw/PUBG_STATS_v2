@@ -94,6 +94,11 @@ const FilterMenu = ({
           <FormControlLabel
             value="current-season"
             control={<Radio />}
+            label="Season 7"
+          />
+          <FormControlLabel
+            value="season-6"
+            control={<Radio />}
             label="Season 6"
           />
           <FormControlLabel
