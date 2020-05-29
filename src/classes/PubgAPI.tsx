@@ -192,7 +192,7 @@ export class PubgAPI {
   public getSeasonKD = async (userID: string, gameMode: string, seasonID: string ) => {
 
     // 1分間に10回以上叩くと 429 error で失敗するので数秒あけてとる
-    await this.delay(10);
+    await this.delay(12);
 
     try {
       // アカウントID取ってくるやつ
@@ -201,10 +201,16 @@ export class PubgAPI {
       // console.log(accountID);
 
       // 現シーズンスタッツ取ってKD返す
+      // TODO: もうちょい手前でランクかどうか判定いれたい
       let currentSeasonStats = await this.getAPI('/shards/steam/players/' + accountID + '/seasons/' + seasonID);
       // console.log(currentSeasonStats);
       let kd = (currentSeasonStats!.data.data.attributes.gameModeStats[gameMode]['kills'] / currentSeasonStats!.data.data.attributes.gameModeStats[gameMode]['losses']).toFixed(2);
-      // console.log(userID +  ' => ' + kd);
+      if (kd === 'NaN') {
+        console.log("Rank");
+        let currentSeasonRankedStats = await this.getAPI('/shards/steam/players/' + accountID + '/seasons/' + seasonID + '/ranked');
+        kd = (currentSeasonRankedStats!.data.data.attributes.rankedGameModeStats[gameMode]['kda']).toFixed(2);
+      }
+      console.log(userID +  ' => ' + kd);
       return kd;
      } catch( reason ) {
       console.log("getSeasonStats => " +  reason);

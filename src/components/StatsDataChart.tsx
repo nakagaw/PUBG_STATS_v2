@@ -86,7 +86,7 @@ const StatsDataChart = ({
     if(filteredData.length !== 0) {
       statsDataObject.killDeath = (filteredKills.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(2);
       avgKD += Number(statsDataObject.killDeath);
-      avgKDLength += 1;
+      avgKDLength += 1; // このモードでプレイした日数だすのに
     }
 
     // avg damages 計算
@@ -96,12 +96,8 @@ const StatsDataChart = ({
     if(filteredData.length !== 0) {
       statsDataObject.avgDamage = (filteredDamageDealt.reduce((current: any, items: any) => current+=items, 0)/filteredData.length).toFixed(1);
       avgDMG += Number(statsDataObject.avgDamage);
-      avgDMGLength += 1;
+      avgDMGLength += 1; // このモードでプレイした日数だすのに
     }
-    console.log(avgDMG);
-    console.log(avgDMGLength);
-    console.log(avgKD);
-    console.log(avgKDLength);
     statsDataObject.name = data.playedDate;
     statsData.push(statsDataObject);
   }
