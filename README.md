@@ -1,3 +1,5 @@
+### ※ もう古くて動きません (Not working now)
+
 You can get today's kills and Average damages from PUBG API.
 
 <img src="./readme/image1.png" style="width: 50%">
